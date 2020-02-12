@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'img2webp'
 
 android {
     compileSdkVersion 29
