@@ -18,6 +18,7 @@ class Img2WebpPlugin implements Plugin<Project> {
     private int compressSize = 0
     private int count = 0
     private boolean aapt2
+    private HashMap<Long, String> fileSize = new HashSet<>()
 
     @Override
     void apply(Project project) {
@@ -35,8 +36,8 @@ class Img2WebpPlugin implements Plugin<Project> {
                 def buildType = variant.getVariantData().getVariantConfiguration().getBuildType().name
                 def processResTask = project.tasks.findByName("process${variant.name.capitalize()}Resources")
                 def dx = project.tasks.findByName("package${variant.name.capitalize()}")
-                def webpConvertPlugin = "img2webpPlugin${variant.name.capitalize()}"
-                project.tasks.create(webpConvertPlugin) {
+                def imageConvertTask = "img2webp${variant.name.capitalize()}"
+                project.tasks.create(imageConvertTask) {
 
                     Utils.BUILD_DIR = "${project.buildDir}"
                     def resPath = "${Utils.BUILD_DIR}/intermediates/processed_res/debug/processDebugResources/out"
@@ -65,28 +66,25 @@ class Img2WebpPlugin implements Plugin<Project> {
                             //删除原res_apk
                             resApk.delete()
                             //img2webp
-                            img2webp(new File(zipDir, "res"))
+                            this.convertImg(new File(zipDir, "res"))
                             Utils.zip(resApk.absolutePath, zipDir.listFiles())
                             def msg = "${(System.currentTimeMillis() - currTime) / 1000.0f}s to process $count files. Compress size:${String.format("%.2f", compressSize / 1024.0f)}kb"
                             logFile.append(msg)
-                            Utils.log msg
+                            Utils.logI msg
                         }
                     }
-                    project.tasks.findByName(webpConvertPlugin).onlyIf {
-                        webpOptions.enable
-                    }
-                    project.tasks.findByName(webpConvertPlugin).dependsOn dx.taskDependencies.getDependencies(dx)
-                    dx.dependsOn project.tasks.findByName(webpConvertPlugin)
+                    project.tasks.findByName(imageConvertTask).dependsOn dx.taskDependencies.getDependencies(dx)
+                    dx.dependsOn project.tasks.findByName(imageConvertTask)
+                }.onlyIf {
+                    webpOptions.enable
                 }
             }
         }
-
     }
 
-    private void img2webp(File dir) {
+    private void convertImg(File dir) {
         def isDel = webpOptions.delImgRegex != null && webpOptions.delImgRegex.trim() != ""
         dir.eachDirMatch(~/drawable[a-z0-9-]*/) { resDir ->
-            def resCharIndex = resDir.absolutePath.indexOf("/res/")
             resDir.eachFile { resFile ->
                 def name = resFile.name
                 def f = new File("${project.projectDir}/webp_white_list.txt")
@@ -95,33 +93,48 @@ class Img2WebpPlugin implements Plugin<Project> {
                 }
 
                 def originSize = resFile.length()
-                if (isDel && resFile.name.matches(webpOptions.delImgRegex)) {
-                    "rm ${resFile.absolutePath}".execute().waitFor()
-                    logFile.append("${resFile.absolutePath.substring(resCharIndex)}: del ${originSize}->0\n")
-                    compressSize += originSize
-                } else if (!name.contains(".9") && (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".gif"))) {
+                def fileRelPath = resFile.absolutePath.substring(resDir.absolutePath.indexOf("/res/"))
+                if (!name.contains(".9") && (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".gif"))) {
+                    //黑名单，文件删除
+                    if (isDel && resFile.name.matches(webpOptions.delImgRegex)) {
+                        resFile.delete()
+                        logFile.append("${fileRelPath}: del ${originSize}->0\n")
+                        compressSize += originSize
+                        return
+                    }
+
                     def isInWhiteList = false
                     f.eachLine { whiteName ->
                         if (name == whiteName) {
                             isInWhiteList = true
+                            return
                         }
                     }
+                    //白名单,文件跳过
                     if (isInWhiteList) {
-                        logFile.append("${resFile.absolutePath.substring(resCharIndex)}: skiped \n")
+                        logFile.append("${fileRelPath}: skiped \n")
                         return
+                    }
+                    //文件查重
+                    if (webpOptions.checkDuplicate) {
+                        if (fileSize.containsKey(originSize)) {
+                            Utils.logE("file size: ${fileSize.get(originSize)} = ${fileRelPath} ${originSize}byte")
+                        }
+                        fileSize.put(resFile.length(), fileRelPath)
                     }
 
                     def executeProgram = "cwebp"
                     if (name.endsWith(".gif")) {
                         executeProgram = "gif2webp"
                     }
+                    //文件转换
 //                    def picName = name.split('\\.')[0]
                     if ("${Utils.WEBP_LIB_BIN_PATH}/bin/${executeProgram}  -q ${webpOptions.quality} -m 6 ${resFile} -o ${resFile}".execute().waitFor() != 0) {
                         throw new RuntimeException("${resFile} error ")
                     }
                     def cSize = resFile.length()
                     def compSize = originSize - cSize
-                    logFile.append("${resFile.absolutePath.substring(resCharIndex)}: cmp ${originSize}->${cSize} size: ${compSize} \n")
+                    logFile.append("${fileRelPath}: cmp ${originSize}->${cSize} size: ${compSize} \n")
                     count++
                     compressSize += compSize
                 }
@@ -132,6 +145,7 @@ class Img2WebpPlugin implements Plugin<Project> {
     static class WebpOptions {
         int quality = 75
         boolean enable = true
+        boolean checkDuplicate = true
         String delImgRegex
     }
 }

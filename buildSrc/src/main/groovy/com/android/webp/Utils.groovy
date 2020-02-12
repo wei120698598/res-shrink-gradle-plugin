@@ -1,6 +1,8 @@
 package com.android.webp
 
+import org.apache.commons.codec.binary.Hex
 
+import java.security.MessageDigest
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.zip.ZipEntry
@@ -19,7 +21,7 @@ class Utils {
     static def BUILD_DIR = ""
     static def WEBP_LIB_DIR = ""
     static String WEBP_LIB_BIN_PATH
-    static final def TAG = Img2WebpPlugin.class.simpleName
+    static final def TAG = "Img2webp"
 
     /**
      * 压缩
@@ -222,8 +224,12 @@ class Utils {
         fos.close()
     }
 
-    static void log(Object obj) {
+    static void logI(Object obj) {
         println("${TAG}：${obj.toString()}")
+    }
+
+    static void logE(Object obj) {
+        System.err.println("${TAG}：${obj.toString()}")
     }
 
     static String run(String command) throws IOException {
@@ -253,6 +259,36 @@ class Utils {
             }
         }
         return result
+    }
+
+
+    /**
+     * 获取一个文件的md5值(可处理大文件)
+     * @return md5 value
+     */
+    static String getMD5(File file) {
+        FileInputStream fileInputStream = null
+        try {
+            MessageDigest MD5 = MessageDigest.getInstance("MD5")
+            fileInputStream = new FileInputStream(file)
+            byte[] buffer = new byte[8192]
+            int length
+            while ((length = fileInputStream.read(buffer)) != -1) {
+                MD5.update(buffer, 0, length)
+            }
+            return new String(Hex.encodeHex(MD5.digest()))
+        } catch (Exception e) {
+            e.printStackTrace()
+            return null
+        } finally {
+            try {
+                if (fileInputStream != null) {
+                    fileInputStream.close()
+                }
+            } catch (IOException e) {
+                e.printStackTrace()
+            }
+        }
     }
 
 }
