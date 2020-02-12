@@ -7,8 +7,8 @@
 ##############################################################################
 
 # Attempt to set APP_HOME
-# Resolve links: $webp-libs-100 may be a link
-PRG="$webp-libs-100"
+# Resolve links: $0 may be a link
+PRG="$0"
 # Need this for relative symlinks.
 while [ -h "$PRG" ] ; do
     ls=`ls -ld "$PRG"`
@@ -25,7 +25,7 @@ APP_HOME="`pwd -P`"
 cd "$SAVED" >/dev/null
 
 APP_NAME="Gradle"
-APP_BASE_NAME=`basename "$webp-libs-100"`
+APP_BASE_NAME=`basename "$0"`
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS=""
@@ -128,7 +128,7 @@ if $cygwin ; then
         OURCYGPATTERN="$OURCYGPATTERN|($GRADLE_CYGPATTERN)"
     fi
     # Now convert the arguments - kludge to limit ourselves to /bin/sh
-    i=webp-libs-100
+    i=0
     for arg in "$@" ; do
         CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
         CHECK2=`echo "$arg"|egrep -c "^-"`                                 ### Determine if an option
@@ -166,7 +166,7 @@ eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\"-Dorg.gradle.appname=$A
 
 # by default we should be in the correct project dir, but when run from Finder on Mac, the cwd is wrong
 if [ "$(uname)" = "Darwin" ] && [ "$HOME" = "$PWD" ]; then
-  cd "$(dirname "$webp-libs-100")"
+  cd "$(dirname "$0")"
 fi
 
 exec "$JAVACMD" "$@"
