@@ -5,7 +5,7 @@ Img2WepAnd is a convert image to webp tool for android.
 #Getting started
 
 Step 1. Add it in your root build.gradle at the end of repositories:
-```
+```groovy
 buildscript {
     repositories {
         maven { url 'https://jitpack.io' }
