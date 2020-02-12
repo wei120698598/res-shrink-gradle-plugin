@@ -6,18 +6,18 @@ Img2WepAnd is a convert image to webp tool for android.
 
 Step 1. Add it in your root build.gradle at the end of repositories:
 ```groovy
-buildscript {
-    repositories {
-        maven { url 'https://jitpack.io' }
-	}
-	dependencies {
-        classpath "com.github.wei120698598:img2webp:Tag"
+    buildscript {
+        repositories {
+            maven { url 'https://jitpack.io' }
+    	}
+    	dependencies {
+            classpath "com.github.wei120698598:img2webp:Tag"
+        }
     }
-}
 ```
 Step 2. Apply the plugin in your app build.gralde
 ```groovy
-apply plugin: 'img2webp'
+    apply plugin: 'img2webp'
 ```
 
 Share this release:
@@ -28,14 +28,14 @@ Share this release:
 You can set some options for webp plugin.
 
 ```groovy
-webpOptions{
-    //enable plugin, default true.
-    enable false
-    //convert quality 0-100,suggest 50-100, default 75.
-    quality 75
-    //remove image by the regex, default null.
-    delImgRegex "xxx"
-}
+    webpOptions{
+        //enable plugin, default true.
+        enable false
+        //convert quality 0-100,suggest 50-100, default 75.
+        quality 75
+        //remove image by the regex, default null.
+        delImgRegex "xxx"
+    }
 ```
 
 # Convert image log
