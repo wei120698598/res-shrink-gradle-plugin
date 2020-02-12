@@ -17,6 +17,7 @@ class Img2WebpPlugin implements Plugin<Project> {
     private WebpOptions webpOptions = new WebpOptions()
     private int compressSize = 0
     private int count = 0
+    private boolean aapt2
 
     @Override
     void apply(Project project) {
@@ -24,11 +25,15 @@ class Img2WebpPlugin implements Plugin<Project> {
         def hasApp = project.plugins.withType(AppPlugin)
         def currTime
         webpOptions = project.extensions.create("webpOptions", WebpOptions)
-
+        if (webpOptions.quality < 0 || webpOptions.quality > 100) {
+            webpOptions.quality = 75
+        }
         def variants = hasApp ? project.android.applicationVariants : project.android.libraryVariants
         project.afterEvaluate {
             variants.all { variant ->
                 def flavor = variant.getVariantData().getVariantConfiguration().getFlavorName()
+                def buildType = variant.getVariantData().getVariantConfiguration().getBuildType().name
+                def processResTask = project.tasks.findByName("process${variant.name.capitalize()}Resources")
                 def dx = project.tasks.findByName("package${variant.name.capitalize()}")
                 def webpConvertPlugin = "img2webpPlugin${variant.name.capitalize()}"
                 project.tasks.create(webpConvertPlugin) {
