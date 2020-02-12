@@ -1,16 +1,29 @@
 apply plugin: 'groovy'
+apply plugin: 'com.github.dcendents.android-maven'
 
-group='com.github.wei120698598'
+buildscript {
+    repositories {
+        google()
+        jcenter()
 
-archivesBaseName = "AndImg2WepPlugin"
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
 
 allprojects {
     repositories {
         google()
         jcenter()
-        maven { url "https://jitpack.io" }
     }
 }
+group='com.github.wei120698598'
+
+archivesBaseName = "AndImg2WepPlugin"
+
 jar {
     manifest {
         attributes "Manifest-Version": "1.0.0"
@@ -22,5 +35,4 @@ dependencies {
     implementation gradleApi()
     implementation localGroovy()
     implementation 'com.android.tools.build:gradle:3.5.3'
-    implementation 'com.github.jitpack:gradle-simple:1.0'
 }
