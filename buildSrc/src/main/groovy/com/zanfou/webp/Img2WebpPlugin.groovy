@@ -32,8 +32,11 @@ class Img2WebpPlugin implements Plugin<Project> {
                     doFirst {
                         buildTypeName = variant.getVariantData().getVariantConfiguration().getBuildType().name
                         logFile = new File("${Utils.BUILD_DIR}/outputs/webp/$buildTypeName/mapping.txt")
-                        logFile.delete()
-                        logFile.parentFile.mkdirs()
+                        if (logFile.exists()) {
+                            logFile.delete()
+                        } else {
+                            logFile.parentFile.mkdirs()
+                        }
                         logFile.createNewFile()
                         "rm -rf $resPath/${Utils.RES_APK_NAME}".execute().waitFor()
 
@@ -63,39 +66,33 @@ class Img2WebpPlugin implements Plugin<Project> {
     }
 
     private void img2webp(File dir) {
-        BufferedWriter logbw = new BufferedWriter(new FileWriter(logFile))
-        try {
-            dir.eachDirMatch(~/drawable[a-z0-9-]*/) { resDir ->
-                def resCharIndex = resDir.absolutePath.indexOf("/res/")
-                resDir.eachFile { resFile ->
-                    def name = resFile.name
-                    def f = new File("${project.projectDir}/webp_white_list.txt")
-                    if (!f.exists()) {
-                        f.createNewFile()
-                    }
-                    def isInWhiteList = false
-                    f.eachLine { whiteName ->
-                        if (name == whiteName) {
-                            isInWhiteList = true
-                        }
-                    }
-                    if (!isInWhiteList && (name.endsWith(".jpg") || name.endsWith(".png"))) {
-                        if (!name.contains(".9")) {
-                            def picName = name.split('\\.')[0]
-                            if ("${Utils.WEBP_LIB_BIN_PATH}/bin/img2webp -loop 2 -q 75 -m 6 ${resFile} -d 80 -o ${resDir}/${picName}.webp".execute().waitFor() != 0) {
-                                throw new RuntimeException("${resFile} error ")
-                            }
-                            "rm ${resFile}".execute().waitFor()
-                            logbw.writeLine("${resFile.absolutePath.substring(resCharIndex)} -> ${resDir.absolutePath.substring(resCharIndex)}/${picName}.webp")
-                            logbw.flush()
-                        }
+        dir.eachDirMatch(~/drawable[a-z0-9-]*/) { resDir ->
+            def resCharIndex = resDir.absolutePath.indexOf("/res/")
+            resDir.eachFile { resFile ->
+                def name = resFile.name
+                def f = new File("${project.projectDir}/webp_white_list.txt")
+                if (!f.exists()) {
+                    f.createNewFile()
+                }
+                def isInWhiteList = false
+                f.eachLine { whiteName ->
+                    if (name == whiteName) {
+                        isInWhiteList = true
                     }
                 }
+                if (!isInWhiteList && !name.contains(".9") && (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".gif"))) {
+                    def executeProgram = "cwebp"
+                    if (name.endsWith(".gif")) {
+                        executeProgram = "gif2webp"
+                    }
+                    def picName = name.split('\\.')[0]
+                    if ("${Utils.WEBP_LIB_BIN_PATH}/bin/${executeProgram}  -q 75 -m 6 ${resFile} -o ${resDir}/${picName}.webp".execute().waitFor() != 0) {
+                        throw new RuntimeException("${resFile} error ")
+                    }
+                    "rm ${resFile}".execute().waitFor()
+                    logFile.append("${resFile.absolutePath.substring(resCharIndex)}-> ${resDir.absolutePath.substring(resCharIndex)}/${picName}.webp\n")
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace()
-        } finally {
-            logbw.close()
         }
     }
 }

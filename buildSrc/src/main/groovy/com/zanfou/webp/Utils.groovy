@@ -1,5 +1,6 @@
 package com.zanfou.webp
 
+import com.android.tools.r8.code.F
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -185,25 +186,33 @@ class Utils {
         JarURLConnection jarCon = (JarURLConnection) jarURL.openConnection()
         JarFile jarFile = jarCon.getJarFile()
         Enumeration<JarEntry> jarEntry = jarFile.entries()
+        def osName = System.getProperty("os.name").toLowerCase()
+        def webpLibName = "mac"
+        if (osName.contains("win")) {
+            webpLibName = "win"
+        } else if (osName.contains("linux")) {
+            webpLibName = "linux"
+        }
         while (jarEntry.hasMoreElements()) {
             JarEntry entry = jarEntry.nextElement()
             String name = entry.getName()
-
-            if (name.startsWith("webp-libs") && !entry.isDirectory()) {
+            if (name.startsWith("webp-libs") && name.contains(webpLibName) && !entry.isDirectory()) {
                 if (WEBP_LIB_BIN_PATH == null) {
                     def index = name.indexOf("/bin/")
                     if (index != -1) {
                         WEBP_LIB_BIN_PATH = "${BUILD_DIR}/intermediates/${name.substring(0, index)}"
                     }
                 }
-                copy(name, Utils.class.getClassLoader().getResourceAsStream(name))
-                "chmod 777 $BUILD_DIR/intermediates/$name".execute().waitFor()
+                def file = new File("${BUILD_DIR}/intermediates/$name")
+                if (!file.exists()) {
+                    copy(file, Utils.class.getClassLoader().getResourceAsStream(name))
+                    "chmod 777 $BUILD_DIR/intermediates/$name".execute().waitFor()
+                }
             }
         }
     }
 
-    static void copy(String name, InputStream is) {
-        def file = new File("${BUILD_DIR}/intermediates/$name")
+    static void copy(File file, InputStream is) {
         file.getParentFile().mkdirs()
         def fos = new FileOutputStream(file)
         int len = 0
@@ -246,4 +255,5 @@ class Utils {
         }
         return result
     }
+
 }
