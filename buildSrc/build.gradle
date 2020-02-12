@@ -1,24 +1,26 @@
-buildscript {
+apply plugin: 'groovy'
+
+group='com.github.wei120698598'
+
+archivesBaseName = "AndImg2WepPlugin"
+
+allprojects {
     repositories {
-        jcenter()
         google()
+        jcenter()
+        maven { url "https://jitpack.io" }
     }
 }
-
-apply plugin: 'groovy'
-repositories {
-    jcenter()
-    google()
-}
-archivesBaseName = "AndWepPlugin"
 jar {
     manifest {
-        attributes "Manifest-Version": "10.0"
+        attributes "Manifest-Version": "1.0.0"
         attributes "Create-by": "shuxin.wei"
     }
 }
+
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
     implementation 'com.android.tools.build:gradle:3.5.3'
+    implementation 'com.github.jitpack:gradle-simple:1.0'
 }
