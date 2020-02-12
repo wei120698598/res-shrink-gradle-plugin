@@ -93,18 +93,24 @@ class Img2WebpPlugin implements Plugin<Project> {
                 if (!f.exists()) {
                     f.createNewFile()
                 }
-                def isInWhiteList = false
-                f.eachLine { whiteName ->
-                    if (name == whiteName) {
-                        isInWhiteList = true
-                    }
-                }
+
                 def originSize = resFile.length()
                 if (isDel && resFile.name.matches(webpOptions.delImgRegex)) {
                     "rm ${resFile.absolutePath}".execute().waitFor()
                     logFile.append("${resFile.absolutePath.substring(resCharIndex)}: del ${originSize}->0\n")
                     compressSize += originSize
-                } else if (!isInWhiteList && !name.contains(".9") && (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".gif"))) {
+                } else if (!name.contains(".9") && (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".gif"))) {
+                    def isInWhiteList = false
+                    f.eachLine { whiteName ->
+                        if (name == whiteName) {
+                            isInWhiteList = true
+                        }
+                    }
+                    if (isInWhiteList) {
+                        logFile.append("${resFile.absolutePath.substring(resCharIndex)}: skiped \n")
+                        return
+                    }
+
                     def executeProgram = "cwebp"
                     if (name.endsWith(".gif")) {
                         executeProgram = "gif2webp"
