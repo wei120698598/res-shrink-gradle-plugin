@@ -31,12 +31,15 @@ You can set some options for webp plugin.
 
 ```groovy
 webpOptions{
+    //enable plugin, default true.
     enable false
+    //convert quality 0-100,suggest 50-100, default 75.
     quality 75
+    //remove image by the regex, default null.
     delImgRegex "xxx"
 }
 ```
 
-# Converted image log
+# Convert image log
 
 Img2webp plugin will be generate `{app}/build/outputs/webp/{buildType}/mapping.txt` file when build finish.
