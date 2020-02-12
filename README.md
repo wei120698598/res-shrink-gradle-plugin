@@ -8,9 +8,11 @@ Step 1. Add it in your root build.gradle at the end of repositories:
 ```groovy
     buildscript {
         repositories {
+            ...
             maven { url 'https://jitpack.io' }
     	}
     	dependencies {
+            ...
             classpath "com.github.wei120698598:img2webp:Tag"
         }
     }
