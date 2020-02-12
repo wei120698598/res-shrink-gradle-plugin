@@ -18,7 +18,7 @@ Step 1. Add it in your root build.gradle at the end of repositories:
         }
     }
 ```
-Step 2. Apply the plugin in your app build.gralde
+Step 2. Apply the plugin in your application build.gralde
 ```groovy
     apply plugin: 'img2webp'
 ```
@@ -36,10 +36,16 @@ You can set some options for webp plugin.
         enable false
         //convert quality 0-100,suggest 50-100, default 75.
         quality 75
+        //check image is duplicate, if both size equal, console will show error message , default true.
+        checkDuplicate true
         //remove image by the regex, default null.
         delImgRegex "xxx"
     }
 ```
+
+# Config `webp_white_list.txt`
+Create `webp_white_list.txt` in your application directory.<br>
+Write image name that you don't want to convert in the file line by line.
 
 # Convert image log
 
