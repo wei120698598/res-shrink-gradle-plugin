@@ -1,8 +1,10 @@
-package com.zanfou.webp;
+package com.android.webp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.zanfou.webp.R;
 
 public class MainActivity extends AppCompatActivity {
 

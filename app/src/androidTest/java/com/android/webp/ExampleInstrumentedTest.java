@@ -1,4 +1,4 @@
-package com.zanfou.webp;
+package com.android.webp;
 
 import android.content.Context;
 

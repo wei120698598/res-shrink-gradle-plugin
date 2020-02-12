@@ -1,6 +1,5 @@
-package com.zanfou.webp
+package com.android.webp
 
-import com.android.tools.r8.code.F
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile

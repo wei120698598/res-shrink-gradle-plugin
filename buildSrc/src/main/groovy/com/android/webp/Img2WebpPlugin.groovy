@@ -1,4 +1,4 @@
-package com.zanfou.webp
+package com.android.webp
 
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
@@ -19,17 +19,19 @@ class Img2WebpPlugin implements Plugin<Project> {
     void apply(Project project) {
         this.project = project
         def hasApp = project.plugins.withType(AppPlugin)
+        def currTime
 
         def variants = hasApp ? project.android.applicationVariants : project.android.libraryVariants
         project.afterEvaluate {
             variants.all { variant ->
                 def flavor = variant.getVariantData().getVariantConfiguration().getFlavorName()
                 def dx = project.tasks.findByName("package${variant.name.capitalize()}")
-                def webpConvertPlugin = "zanfouWebpPlugin${variant.name.capitalize()}"
+                def webpConvertPlugin = "img2webpPlugin${variant.name.capitalize()}"
                 project.tasks.create(webpConvertPlugin) {
                     Utils.BUILD_DIR = "${project.buildDir}"
                     def resPath = "${Utils.BUILD_DIR}/intermediates/processed_res/debug/processDebugResources/out"
                     doFirst {
+                        currTime = System.currentTimeMillis()
                         buildTypeName = variant.getVariantData().getVariantConfiguration().getBuildType().name
                         logFile = new File("${Utils.BUILD_DIR}/outputs/webp/$buildTypeName/mapping.txt")
                         if (logFile.exists()) {
@@ -45,16 +47,15 @@ class Img2WebpPlugin implements Plugin<Project> {
                     doLast {
                         def resApk = new File(resPath, "${Utils.RES_APK_NAME}.ap_")
                         if (resApk.exists()) {
-                            Utils.log("处理ResApk--->${resApk.absolutePath}")
-
                             //解压res_apk
                             def zipDir = new File(resApk.parentFile.absolutePath, Utils.RES_APK_NAME)
                             Utils.unzip(resApk.absolutePath, zipDir.absolutePath)
                             //删除原res_apk
                             resApk.delete()
                             //img2webp
-                            img2webp(new File(zipDir, "res"))
+                            def count = img2webp(new File(zipDir, "res"))
                             Utils.zip(resApk.absolutePath, zipDir.listFiles())
+                            Utils.log "${(System.currentTimeMillis() - currTime) / 1000.0f}s to process $count files."
                         }
                     }
                     project.tasks.findByName(webpConvertPlugin).dependsOn dx.taskDependencies.getDependencies(dx)
@@ -65,7 +66,8 @@ class Img2WebpPlugin implements Plugin<Project> {
 
     }
 
-    private void img2webp(File dir) {
+    private int img2webp(File dir) {
+        int count = 0
         dir.eachDirMatch(~/drawable[a-z0-9-]*/) { resDir ->
             def resCharIndex = resDir.absolutePath.indexOf("/res/")
             resDir.eachFile { resFile ->
@@ -91,8 +93,10 @@ class Img2WebpPlugin implements Plugin<Project> {
                     }
                     "rm ${resFile}".execute().waitFor()
                     logFile.append("${resFile.absolutePath.substring(resCharIndex)}-> ${resDir.absolutePath.substring(resCharIndex)}/${picName}.webp\n")
+                    count++
                 }
             }
         }
+        return count
     }
 }
