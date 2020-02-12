@@ -43,4 +43,4 @@ You can set some options for webp plugin.
 
 # Convert image log
 
-Img2webp plugin will be generate `{app}/build/outputs/webp/{buildType}/mapping.txt` file when build finish.
+Img2webp plugin will generate `{app}/build/outputs/webp/{buildType}/mapping.txt` file when built finish.
