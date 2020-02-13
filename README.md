@@ -1,7 +1,7 @@
 # Img2WepAnd [![](https://jitpack.io/v/wei120698598/img2webp.svg)](https://jitpack.io/#wei120698598/img2webp)
 
 Img2webp is a tools of PNG/JPG/GIF converted to WEBP for android.
-The plugin is work for aaptV2.
+The plugin is work for aapt and aaptv2
 
 # Getting started
 
