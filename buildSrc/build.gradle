@@ -1,7 +1,9 @@
 buildscript {
     repositories {
+        mavenLocal()
         google()
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.3'
@@ -11,18 +13,19 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         jcenter()
+        mavenCentral()
     }
 }
 
 apply plugin: 'groovy'
 apply plugin: 'com.github.dcendents.android-maven'
 
-group='com.github.wei120698598'
+group = 'com.github.wei120698598'
 
 archivesBaseName = "AndImg2WepPlugin"
-
 
 
 jar {
@@ -54,6 +57,4 @@ artifacts {
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-
-    implementation 'com.android.tools.build:gradle:3.5.3'
 }

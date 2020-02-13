@@ -1,6 +1,6 @@
 package com.planb.webp
 
-import com.android.build.gradle.AppPlugin
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -12,7 +12,6 @@ import org.gradle.api.Project
  */
 class WebpPlugin implements Plugin<Project> {
     private Project project
-    private String buildTypeName
     private File logFile
     private WebpOptions webpOptions = new WebpOptions()
     private int compressSize = 0
@@ -27,30 +26,18 @@ class WebpPlugin implements Plugin<Project> {
         if (webpOptions.quality < 0 || webpOptions.quality > 100) {
             webpOptions.quality = 75
         }
-        def variants = project.plugins.withType(AppPlugin) ? project.android.applicationVariants : project.android.libraryVariants
+        def variants = project.android.applicationVariants != null ? project.android.applicationVariants : project.android.libraryVariants
         project.afterEvaluate {
             variants.all { variant ->
                 Utils.BUILD_DIR = "${project.buildDir}"
                 def startTime = System.currentTimeMillis()
                 def flavor = variant.getVariantData().getVariantConfiguration().getFlavorName()
-                def buildType = variant.getVariantData().getVariantConfiguration().getBuildType().name
-                def hookTask
-                def resPath
-                //gradle.properties 中没有配置android.enableAapt2
-                //webpOptions.aapt2Enable=true
-                def enableAapt2 = webpOptions.enableAapt2 && (!project.hasProperty("android.enableAapt2") || !project["android.enableAapt2"])
-                if (enableAapt2) {
-                    hookTask = project.tasks.findByName("package${variant.name.capitalize()}")
-                    resPath = "${Utils.BUILD_DIR}/intermediates/processed_res/${buildType}/processDebugResources/out"
-                } else {
-                    hookTask = project.tasks.findByName("process${variant.name.capitalize()}Resources")
-                    resPath = "${Utils.BUILD_DIR}/intermediates/res/${flavor}/${buildType}"
-                }
+                def hookTask = project.tasks.findByName("package${variant.name.capitalize()}")
+                def resPath = "${Utils.BUILD_DIR}/intermediates/processed_res/${variant.name.capitalize()}/processDebugResources/out"
                 def imageConvertTask = "webp${variant.name.capitalize()}"
                 project.tasks.create(imageConvertTask) {
                     doFirst {
-
-                        buildTypeName = variant.getVariantData().getVariantConfiguration().getBuildType().name
+                        def  buildTypeName = variant.getVariantData().getVariantConfiguration().getBuildType().name
                         logFile = new File("${Utils.BUILD_DIR}/outputs/webp/$buildTypeName/webp-plugin-report.txt")
                         if (logFile.exists()) {
                             logFile.delete()
@@ -60,31 +47,24 @@ class WebpPlugin implements Plugin<Project> {
                         logFile.createNewFile()
                         logFile.append("AppVersionName:${project.android.defaultConfig.versionName}\n" +
                                 "Quality: ${webpOptions.quality}\n" +
-                                "EnableAapt2: ${enableAapt2}\n" +
                                 "CheckDuplicate: ${webpOptions.checkDuplicate}\n" +
                                 "DelRegex: ${webpOptions.delImgRegex}\n\n")
                         //删除上次遗留文件
-                        if (enableAapt2) {
-                            new File(resPath, Utils.RES_APK_NAME).deleteDir()
+                        new File(resPath, Utils.RES_APK_NAME).deleteDir()
 //                            "rm -rf $resPath/$Utils.RES_APK_NAME".execute().waitFor()
-                        }
                         Utils.copyWebpLib()
                     }
                     doLast {
-                        if (enableAapt2) {
-                            def resApk = new File(resPath, "${Utils.RES_APK_NAME}.ap_")
-                            if (resApk.exists()) {
-                                //解压res_apk
-                                def zipDir = new File(resApk.parentFile.absolutePath, Utils.RES_APK_NAME)
-                                Utils.unzip(resApk.absolutePath, zipDir.absolutePath)
-                                //删除原res_apk
-                                resApk.delete()
-                                //img2webp
-                                convertImg(new File(zipDir, "res"))
-                                Utils.zip(resApk.absolutePath, zipDir.listFiles())
-                            }
-                        } else {
-                            convertImg(new File(resPath))
+                        def resApk = new File(resPath, "${Utils.RES_APK_NAME}.ap_")
+                        if (resApk.exists()) {
+                            //解压res_apk
+                            def zipDir = new File(resApk.parentFile.absolutePath, Utils.RES_APK_NAME)
+                            Utils.unzip(resApk.absolutePath, zipDir.absolutePath)
+                            //删除原res_apk
+                            resApk.delete()
+                            //img2webp
+                            convertImg(new File(zipDir, "res"))
+                            Utils.zip(resApk.absolutePath, zipDir.listFiles())
                         }
                         def msg = "${(System.currentTimeMillis() - startTime) / 1000.0f}s to process $count files. Compress size:${String.format("%.2f", compressSize / 1024.0f)}kb"
                         logFile.append("\n$msg")
@@ -164,9 +144,6 @@ class WebpPlugin implements Plugin<Project> {
     static class WebpOptions {
         //enable plugin, default true.
         def enable = true
-        //gradle 3.0 aapt2 package tools default enable, if your project aapt2 is disabled, set this property.
-        //enable aapt2 package tools,if gradle.properties has android.enableAapt2, result will be "webpOptions.enableAapt2 && android.enableAapt2"
-        def enableAapt2 = true
         //convert quality 0-100,suggest 50-100, default 75.
         def quality = 75
         //check image is duplicate, if both size equal, console will show error message , default true.

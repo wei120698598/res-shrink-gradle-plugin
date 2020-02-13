@@ -1,7 +1,8 @@
 # Img2WepAnd [![](https://jitpack.io/v/wei120698598/img2webp.svg)](https://jitpack.io/#wei120698598/img2webp)
 
 Img2webp is a tools of PNG/JPG/GIF converted to WEBP for android.
-The plugin is work for aapt and aaptv2
+The plugin is work for aapt and aaptv2.
+Required gradle version 2.14.1+.
 
 # Getting started
 
@@ -34,9 +35,6 @@ You can set some options for webp plugin.
     webpOptions{
         //enable plugin, default true.
         enable true
-        //gradle 3.0 aapt2 package tools default enable, if your project aaptv2 is disabled, set this property.
-        //if your gradle.properties has android.enableAapt2 property,result will be "webpOptions.enableAapt2 && android.enableAapt2"
-        enableAapt2 true
         //convert quality 0-100,suggest 50-100, default 75.
         quality 75
         //check image is duplicate, if both size equal, console will show error message , default true.
