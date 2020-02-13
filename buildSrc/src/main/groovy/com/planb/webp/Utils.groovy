@@ -1,6 +1,6 @@
 package com.planb.webp
 
-import org.apache.commons.codec.binary.Hex
+import org.gradle.internal.impldep.org.apache.commons.codec.binary.Hex
 
 import java.security.MessageDigest
 import java.util.jar.JarEntry
