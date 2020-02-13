@@ -34,8 +34,8 @@ You can set some options for webp plugin.
     webpOptions{
         //enable plugin, default true.
         enable true
-        //gradle 3.0 aapt2 package tools default enable, if your project aapt2 is disabled, set this property.
-        //enable aapt2 package tools,if gradle.properties has android.enableAapt2,result will be "webpOptions.enableAapt2 && android.enableAapt2"
+        //gradle 3.0 aapt2 package tools default enable, if your project aaptv2 is disabled, set this property.
+        //if your gradle.properties has android.enableAapt2 property,result will be "webpOptions.enableAapt2 && android.enableAapt2"
         enableAapt2 true
         //convert quality 0-100,suggest 50-100, default 75.
         quality 75
