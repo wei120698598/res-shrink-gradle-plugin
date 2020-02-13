@@ -46,12 +46,12 @@ class WebpPlugin implements Plugin<Project> {
                     hookTask = project.tasks.findByName("process${variant.name.capitalize()}Resources")
                     resPath = "${Utils.BUILD_DIR}/intermediates/res/${flavor}/${buildType}"
                 }
-                def imageConvertTask = "img2webp${variant.name.capitalize()}"
+                def imageConvertTask = "webp${variant.name.capitalize()}"
                 project.tasks.create(imageConvertTask) {
                     doFirst {
 
                         buildTypeName = variant.getVariantData().getVariantConfiguration().getBuildType().name
-                        logFile = new File("${Utils.BUILD_DIR}/outputs/webp/$buildTypeName/img2webp-plugin-report.txt")
+                        logFile = new File("${Utils.BUILD_DIR}/outputs/webp/$buildTypeName/webp-plugin-report.txt")
                         if (logFile.exists()) {
                             logFile.delete()
                         } else {

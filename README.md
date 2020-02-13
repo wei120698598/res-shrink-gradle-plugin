@@ -14,13 +14,13 @@ Step 1. Add it in your root build.gradle at the end of repositories:
     	}
     	dependencies {
             ...
-            classpath "com.github.wei120698598:img2webp:Tag"
+            classpath "com.github.wei120698598:webp-gradle-plugin:Tag"
         }
     }
 ```
 Step 2. Apply the plugin in your application build.gralde
 ```groovy
-    apply plugin: 'img2webp'
+    apply plugin: 'com.planb.webp'
 ```
 
 Share this release:
@@ -52,4 +52,4 @@ Write image name that you don't want to convert in the file line by line.
 
 # Convert image log
 
-Img2webp plugin will generate `{app}/build/outputs/webp/{buildType}/img2webp-plugin-report.txt` file when built finish.
+Img2webp plugin will generate `{app}/build/outputs/webp/{buildType}/webp-plugin-report.txt` file when built finish.
