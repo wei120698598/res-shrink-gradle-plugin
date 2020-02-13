@@ -33,7 +33,10 @@ You can set some options for webp plugin.
 ```groovy
     webpOptions{
         //enable plugin, default true.
-        enable false
+        enable true
+        //gradle 3.0 aapt2 package tools default enable, if your project aapt2 is disabled, set this property.
+        //enable aapt2 package tools,if gradle.properties has android.enableAapt2,result will be "webpOptions.enableAapt2 && android.enableAapt2"
+        enableAapt2 true
         //convert quality 0-100,suggest 50-100, default 75.
         quality 75
         //check image is duplicate, if both size equal, console will show error message , default true.
@@ -49,4 +52,4 @@ Write image name that you don't want to convert in the file line by line.
 
 # Convert image log
 
-Img2webp plugin will generate `{app}/build/outputs/webp/{buildType}/mapping.txt` file when built finish.
+Img2webp plugin will generate `{app}/build/outputs/webp/{buildType}/img2webp-plugin-report.txt` file when built finish.
