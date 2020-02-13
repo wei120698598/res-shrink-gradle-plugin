@@ -1,4 +1,4 @@
-package com.android.webp;
+package com.planb.webp;
 
 import androidx.appcompat.app.AppCompatActivity;
 

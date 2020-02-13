@@ -1,4 +1,4 @@
-package com.android.webp
+package com.planb.webp
 
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
@@ -10,7 +10,7 @@ import org.gradle.api.Project
  * <p>
  * desc:
  */
-class Img2WebpPlugin implements Plugin<Project> {
+class WebpPlugin implements Plugin<Project> {
     private Project project
     private String buildTypeName
     private File logFile

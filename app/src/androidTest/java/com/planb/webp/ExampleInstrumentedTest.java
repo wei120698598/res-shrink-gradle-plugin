@@ -1,4 +1,4 @@
-package com.android.webp;
+package com.planb.webp;
 
 import android.content.Context;
 

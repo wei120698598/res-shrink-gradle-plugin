@@ -1,4 +1,4 @@
-package com.android.webp
+package com.planb.webp
 
 import org.apache.commons.codec.binary.Hex
 
