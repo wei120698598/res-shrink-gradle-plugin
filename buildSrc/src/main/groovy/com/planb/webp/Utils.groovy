@@ -1,6 +1,5 @@
 package com.planb.webp
 
-import org.gradle.internal.impldep.org.apache.commons.codec.binary.Hex
 
 import java.security.MessageDigest
 import java.util.jar.JarEntry
@@ -224,12 +223,16 @@ class Utils {
         fos.close()
     }
 
-    static void logI(Object obj) {
-        println("${TAG}：${obj.toString()}")
+    static String logI(Object obj) {
+        def msg = "${TAG}：${obj.toString()}"
+        println(msg)
+        return msg
     }
 
-    static void logE(Object obj) {
-        System.err.println("${TAG}：${obj.toString()}")
+    static String logE(Object obj) {
+        def msg = "${TAG}：${obj.toString()}"
+        System.err.println(msg)
+        return msg
     }
 
     static String run(String command) throws IOException {
@@ -262,21 +265,16 @@ class Utils {
     }
 
 
-    /**
-     * 获取一个文件的md5值(可处理大文件)
-     * @return md5 value
-     */
     static String getMD5(File file) {
         FileInputStream fileInputStream = null
         try {
             MessageDigest MD5 = MessageDigest.getInstance("MD5")
             fileInputStream = new FileInputStream(file)
-            byte[] buffer = new byte[8192]
-            int length
-            while ((length = fileInputStream.read(buffer)) != -1) {
-                MD5.update(buffer, 0, length)
-            }
-            return new String(Hex.encodeHex(MD5.digest()))
+            //只判断一部分
+            byte[] buffer = new byte[512]
+            MD5.update(buffer, 0, fileInputStream.read(buffer))
+            BigInteger bigInt = new BigInteger(1, MD5.digest())
+            return bigInt.toString(16)
         } catch (Exception e) {
             e.printStackTrace()
             return null

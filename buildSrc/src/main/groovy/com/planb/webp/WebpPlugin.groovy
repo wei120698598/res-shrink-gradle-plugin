@@ -4,6 +4,8 @@ package com.planb.webp
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+import java.util.concurrent.TimeUnit
+
 /**
  * @author shuxin.wei email:weishuxin@maoyan.com
  * @version v1.webp-libs-100.webp-libs-100* @date 2020-01-26
@@ -16,7 +18,9 @@ class WebpPlugin implements Plugin<Project> {
     private WebpOptions webpOptions = new WebpOptions()
     private int compressSize = 0
     private int count = 0
-    private HashMap<Long, String> fileSize = new HashSet<>()
+    private Set<Long> fileSizeList = new HashSet<>()
+    private Map<String, String> fileMd5List = new HashMap<>()
+    private Set<String> whiteList = new HashSet<>()
 
     @Override
     void apply(Project project) {
@@ -37,7 +41,7 @@ class WebpPlugin implements Plugin<Project> {
                 def imageConvertTask = "webp${variant.name.capitalize()}"
                 project.tasks.create(imageConvertTask) {
                     doFirst {
-                        def  buildTypeName = variant.getVariantData().getVariantConfiguration().getBuildType().name
+                        def buildTypeName = variant.getVariantData().getVariantConfiguration().getBuildType().name
                         logFile = new File("${Utils.BUILD_DIR}/outputs/webp/$buildTypeName/webp-plugin-report.txt")
                         if (logFile.exists()) {
                             logFile.delete()
@@ -52,7 +56,17 @@ class WebpPlugin implements Plugin<Project> {
                         //删除上次遗留文件
                         new File(resPath, Utils.RES_APK_NAME).deleteDir()
 //                            "rm -rf $resPath/$Utils.RES_APK_NAME".execute().waitFor()
+                        //拷贝依赖库
                         Utils.copyWebpLib()
+
+                        //加载白名单
+                        def whiteListFile = new File("${project.projectDir}/webp_white_list.txt")
+                        if (!whiteListFile.exists()) {
+                            whiteListFile.createNewFile()
+                        }
+                        whiteListFile.eachLine { whiteName ->
+                            whiteList.add(whiteName)
+                        }
                     }
                     doLast {
                         def resApk = new File(resPath, "${Utils.RES_APK_NAME}.ap_")
@@ -66,9 +80,8 @@ class WebpPlugin implements Plugin<Project> {
                             convertImg(new File(zipDir, "res"))
                             Utils.zip(resApk.absolutePath, zipDir.listFiles())
                         }
-                        def msg = "${(System.currentTimeMillis() - startTime) / 1000.0f}s to process $count files. Compress size:${String.format("%.2f", compressSize / 1024.0f)}kb"
-                        logFile.append("\n$msg")
-                        Utils.logI msg
+                        def msg = "${TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime)}s to process $count files. Compress size:${String.format("%.2f", compressSize / 1024.0f)}kb"
+                        logFile.append("\n${Utils.logI(msg)}")
                     }
                     project.tasks.findByName(imageConvertTask).dependsOn hookTask.taskDependencies.getDependencies(hookTask)
                     hookTask.dependsOn project.tasks.findByName(imageConvertTask)
@@ -80,62 +93,49 @@ class WebpPlugin implements Plugin<Project> {
     }
 
     private void convertImg(File dir) {
-        def isDel = webpOptions.delImgRegex != null && webpOptions.delImgRegex.trim() != ""
+        def isDelEnable = webpOptions.delImgRegex != null && webpOptions.delImgRegex.trim() != ""
         dir.eachDirMatch(~/drawable[a-z0-9-]*/) { resDir ->
             resDir.eachFile { resFile ->
-                def name = resFile.name
-                def f = new File("${project.projectDir}/webp_white_list.txt")
-                if (!f.exists()) {
-                    f.createNewFile()
-                }
+                def resFileSize = resFile.length()
+                def resFileName = resFile.name
+                def simpleName = "$resFile.parentFile.name/$resFileName"
 
-                def originSize = resFile.length()
-                def fileRelativePath = "$resFile.parentFile.name/$resFile.name"
-                if (!name.contains(".9") && (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".gif"))) {
-                    //黑名单，文件删除
-                    if (isDel && resFile.name.matches(webpOptions.delImgRegex)) {
-                        resFile.delete()
-                        logFile.append("${fileRelativePath}: del ${originSize}->0\n")
-                        compressSize += originSize
-                        return
-                    }
-
-                    def isInWhiteList = false
-                    f.eachLine { whiteName ->
-                        if (name == whiteName) {
-                            isInWhiteList = true
-                            return
-                        }
-                    }
+                if (!resFileName.contains(".9") && (resFileName.endsWith(".jpg") || resFileName.endsWith(".png") || resFileName.endsWith(".gif"))) {
                     //白名单,文件跳过
-                    if (isInWhiteList) {
-                        logFile.append("${fileRelativePath}: skiped \n")
+                    if (whiteList.contains(resFileName)) {
+                        logFile.append("Skiped: ${simpleName} \n")
                         return
                     }
+
+                    //黑名单，文件删除
+                    if (isDelEnable && resFileName.matches(webpOptions.delImgRegex)) {
+                        resFile.delete()
+                        logFile.append("Del: ${simpleName}: ${resFileSize}->0\n")
+                        compressSize += resFileSize
+                        return
+                    }
+
                     //文件查重
                     if (webpOptions.checkDuplicate) {
-                        if (fileSize.containsKey(originSize)) {
-                            def logMsg = "Duplicate Size: ${originSize}byte:  ${fileSize.get(originSize)} = ${fileRelativePath}"
-                            Utils.logE(logMsg)
-                            logFile.append("$logMsg\n")
+                        def md5 = Utils.getMD5(resFile)
+                        def fileName = fileMd5List.get(md5)
+                        if (fileName != null) {
+                            def logMsg = "Duplicate MD5 ${md5}: ${fileName} = ${simpleName}"
+                            logFile.append("${Utils.logE(logMsg)}\n")
                         }
-                        fileSize.put(resFile.length(), fileRelativePath)
+                        fileMd5List.put(md5, simpleName)
                     }
 
-                    def executeProgram = "cwebp"
-                    if (name.endsWith(".gif")) {
-                        executeProgram = "gif2webp"
-                    }
                     //文件转换
 //                    def picName = name.split('\\.')[0]
-                    if ("${Utils.WEBP_LIB_BIN_PATH}/bin/${executeProgram}  -q ${webpOptions.quality} -m 6 ${resFile} -o ${resFile}".execute().waitFor() != 0) {
+                    if ("${Utils.WEBP_LIB_BIN_PATH}/bin/${resFileName.endsWith(".gif") ? "gif2webp" : "cwebp"}  -q ${webpOptions.quality} -m 6 ${resFile} -o ${resFile}".execute().waitFor() != 0) {
                         throw new RuntimeException("${resFile} error ")
                     }
-                    def cSize = resFile.length()
-                    def compSize = originSize - cSize
-                    logFile.append("Compress: ${fileRelativePath}: ${originSize}->${cSize} size: ${compSize} \n")
+                    def newSize = resFile.length()
+                    def diffSize = resFileSize - newSize
+                    logFile.append("Compress: ${simpleName}: ${resFileSize}->${newSize} DiffSize: ${diffSize} \n")
                     count++
-                    compressSize += compSize
+                    compressSize += diffSize
                 }
             }
         }

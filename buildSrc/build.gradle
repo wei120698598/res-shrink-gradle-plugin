@@ -58,3 +58,10 @@ dependencies {
     implementation gradleApi()
     implementation localGroovy()
 }
+
+
+task copyImg(type:Copy){
+    for (int i = 200; i < 400; i++) {
+        "cp /Users/weishuxin/maoyan/work/AndWebp/app/src/main/res/drawable/img2.jpg /Users/weishuxin/maoyan/work/AndWebp/app/src/main/res/drawable/img${i}.jpg ".execute()
+    }
+}
