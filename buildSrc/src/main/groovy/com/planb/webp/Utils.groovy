@@ -16,9 +16,6 @@ import java.util.zip.ZipOutputStream
  *
  */
 class Utils {
-    static def RES_APK_NAME = "resources-debug"
-    static def BUILD_DIR = ""
-    static def WEBP_LIB_DIR = ""
     static String WEBP_LIB_BIN_PATH
     static final def TAG = "Img2webp"
 
@@ -179,7 +176,7 @@ class Utils {
      * @param fileName 文件名
      * @return 文件内容
      */
-    static void copyWebpLib() throws IOException {
+    static String copyWebpLib(String buildDir) throws IOException {
         URL url = Utils.class.getClassLoader().getResource("webp-libs/")
         String jarPath = url.toString().substring(0, url.toString().indexOf("!/") + 2)
         URL jarURL = new URL(jarPath)
@@ -200,27 +197,43 @@ class Utils {
                 if (WEBP_LIB_BIN_PATH == null) {
                     def index = name.indexOf("/bin/")
                     if (index != -1) {
-                        WEBP_LIB_BIN_PATH = "${BUILD_DIR}/intermediates/${name.substring(0, index)}"
+                        WEBP_LIB_BIN_PATH = "${buildDir}/intermediates/${name.substring(0, index)}"
                     }
                 }
-                def file = new File("${BUILD_DIR}/intermediates/$name")
+                def file = new File("${buildDir}/intermediates/$name")
                 if (!file.exists()) {
-                    copy(file, Utils.class.getClassLoader().getResourceAsStream(name))
-                    "chmod 777 $BUILD_DIR/intermediates/$name".execute().waitFor()
+                    copy(Utils.class.getClassLoader().getResourceAsStream(name), file)
+                    "chmod 777 $buildDir/intermediates/$name".execute().waitFor()
                 }
             }
         }
+        return WEBP_LIB_BIN_PATH
     }
 
-    static void copy(File file, InputStream is) {
-        file.getParentFile().mkdirs()
-        def fos = new FileOutputStream(file)
-        int len = 0
-        byte[] bufer = new byte[1024]
-        while (-1 != (len = is.read(bufer))) {
-            fos.write(bufer, 0, len)
+    static void copy(File src, File tar) throws IOException {
+        copy(new FileInputStream(src), tar)
+    }
+
+    static void copy(InputStream is, File file) {
+        FileOutputStream fos
+        try {
+            file.getParentFile().mkdirs()
+            fos = new FileOutputStream(file)
+            int len = 0
+            byte[] bufer = new byte[1024]
+            while (-1 != (len = is.read(bufer))) {
+                fos.write(bufer, 0, len)
+            }
+        } catch (Exception e) {
+            e.printStackTrace()
+        } finally {
+            try {
+                if (fos != null)
+                    fos.close()
+            } catch (Exception e1) {
+                e1.printStackTrace()
+            }
         }
-        fos.close()
     }
 
     static String logI(Object obj) {
