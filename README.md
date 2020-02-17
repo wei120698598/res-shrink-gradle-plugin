@@ -54,8 +54,8 @@ afterEvaluate {
 }
 ```
 
-# Configure `webp_white_list.txt`
-Create `webp_white_list.txt` in your application directory.<br>
+# Configure `webp-ignore-list.txt`
+Create `webp-ignore-list.txt` in your application directory.<br>
 Write image name that you don't want to convert in the file line by line.
 
 # Convert image log

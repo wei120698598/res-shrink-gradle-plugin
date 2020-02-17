@@ -42,7 +42,7 @@ class CompressImg {
         //拷贝依赖库
         webpLibPath = Utils.copyWebpLib(project.buildDir.absolutePath)
         //加载白名单
-        def whiteListFile = new File("${project.projectDir}/webp_white_list.txt")
+        def whiteListFile = new File("${project.projectDir}/webp-ignore-list.txt")
         if (!whiteListFile.exists()) {
             whiteListFile.createNewFile()
         }
