@@ -13,12 +13,8 @@ android {
     }
     buildTypes {
         debug {
-            crunchPngs false
-
-            webpOptions.enable = false
         }
         release {
-            webpOptions.quality = 80
             setSigningConfig(buildTypes.debug.signingConfig)
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -26,10 +22,10 @@ android {
     }
     flavorDimensions "api", "mode"
 
-    aaptOptions{
+    aaptOptions {
         cruncherEnabled false    //对png进行优化检查
         ignoreAssets '*.jpg'  //对res目录下的资源文件进行排除 把res文件夹下面的所有.jpg格式的文件打包到apk中
-        noCompress '.jpg','.png'   //对所有.jpg文件不进行压缩
+        noCompress '.jpg', '.png'   //对所有.jpg文件不进行压缩
     }
 
 //    productFlavors {
@@ -84,8 +80,18 @@ android {
 //        }
 //    }
 }
+afterEvaluate {
+    tasks.each { task ->
+        if (task.name == "img2webpDebug") {
+            task.enabled = false
+        }
+    }
+}
 
-
+webpOptions {
+    enabled = true
+    quality = 90
+}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

@@ -18,7 +18,7 @@ Step 1. Add it in your root build.gradle at the end of repositories:
         }
     }
 ```
-Step 2. Apply the plugin in your application build.gralde
+Step 2. Apply the plugin in your application build.gralde.
 ```groovy
     apply plugin: 'com.planb.webp'
 ```
@@ -33,7 +33,7 @@ You can set some options for webp plugin.
 ```groovy
     webpOptions{
         //enable plugin, default true.
-        enable true
+        enabled true
         //convert quality 0-100,suggest 50-100, default 75.
         quality 75
         //check image is duplicate, if both size equal, console will show error message , default true.
@@ -42,8 +42,19 @@ You can set some options for webp plugin.
         delImgRegex "xxx"
     }
 ```
+# Configure webp plugin enabled in different build types
+Add it in your application build.gralde.
+```groovy
+afterEvaluate {
+    tasks.each { task ->
+        if (task.name == "img2webpDebug") {
+            task.enabled = false
+        }
+    }
+}
+```
 
-# Config `webp_white_list.txt`
+# Configure `webp_white_list.txt`
 Create `webp_white_list.txt` in your application directory.<br>
 Write image name that you don't want to convert in the file line by line.
 

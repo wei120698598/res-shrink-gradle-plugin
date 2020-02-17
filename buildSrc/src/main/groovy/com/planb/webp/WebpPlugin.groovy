@@ -24,16 +24,15 @@ class WebpPlugin implements Plugin<Project> {
         def variants = project.android.applicationVariants != null ? project.android.applicationVariants : project.android.libraryVariants
         project.afterEvaluate {
             variants.all { variant ->
-                def imageConvertTask = "webp${variant.name.capitalize()}"
+                def imageConvertTask = "img2webp${variant.name.capitalize()}"
                 def hookTask = project.tasks.findByName("package${variant.name.capitalize()}")
                 project.tasks.create(imageConvertTask) {
                     doFirst {
-                        def compressImage = new CompressImg(project, variant, webpOptions)
-                        compressImage.compress()
+                        new CompressImg(project, variant, webpOptions).compress()
                     }
                     project.tasks.findByName(imageConvertTask).dependsOn hookTask.taskDependencies.getDependencies(hookTask)
                     hookTask.dependsOn project.tasks.findByName(imageConvertTask)
-                }
+                }.enabled = webpOptions.enabled
             }
         }
     }
@@ -41,7 +40,7 @@ class WebpPlugin implements Plugin<Project> {
 
     static class WebpOptions {
         //enable plugin, default true.
-        def enable = true
+        def enabled = true
         //convert quality 0-100,suggest 50-100, default 75.
         def quality = 75
         //check image is duplicate, if both size equal, console will show error message , default true.
@@ -50,9 +49,9 @@ class WebpPlugin implements Plugin<Project> {
         def delImgRegex
 
         @Override
-        public String toString() {
+        String toString() {
             return "WebpOptions{" +
-                    "enable=" + enable +
+                    "enable=" + enabled +
                     ", quality=" + quality +
                     ", checkDuplicate=" + checkDuplicate +
                     ", delImgRegex=" + delImgRegex +
