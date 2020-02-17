@@ -28,7 +28,7 @@ Share this release:
 
 
 # Config Webp Plugin
-You can set some options for webp plugin.
+You can set some options for webp-gradle-plugin.
 
 ```groovy
     webpOptions{
@@ -60,4 +60,4 @@ Write image name that you don't want to convert in the file line by line.
 
 # Convert image log
 
-Img2webp plugin will generate `{app}/build/outputs/webp/{buildType}/webp-plugin-report.txt` file when built finish.
+webp-gradle-plugin will generate `{app}/build/outputs/webp/{buildType}/webp-plugin-report.txt` file when built finish.
