@@ -25,6 +25,8 @@ class CompressImg {
     private int count = 0
     private String buildTypeName
     private String processedResOutDirPath
+    private File intermediatesDir
+    private boolean useResourceShrinker
 
     CompressImg(Project project, BaseVariant variant, WebpOptions webpOptions) {
         this.project = project
@@ -34,6 +36,8 @@ class CompressImg {
         this.convertOutDir = variantData.getScope().getIncrementalDir("")
         def flavor = variantData.getVariantConfiguration().getFlavorName()
         buildTypeName = variantData.getVariantConfiguration().getBuildType().name
+        intermediatesDir = variantData.getScope().getGlobalScope().getIntermediatesDir()
+        useResourceShrinker = variantData.getScope().useResourceShrinker()
     }
 
     void compress() {
@@ -64,10 +68,15 @@ class CompressImg {
                 "CheckDuplicate: ${webpOptions.checkDuplicate}\n" +
                 "DelRegex: ${webpOptions.delImgRegex}\n\n")
 
-        processedResOutDirPath = "${variantData.getScope().getGlobalScope().getIntermediatesDir()}/processed_res/${variant.name}/process${variant.name.capitalize()}Resources/out"
+        if (useResourceShrinker) {
+            Utils.logE "shrinkResources:true"
+            processedResOutDirPath = "${intermediatesDir}/res_stripped/${variant.getFlavorName()}/${buildTypeName}"
+        } else {
+            processedResOutDirPath = "${intermediatesDir}/processed_res/${variant.name}/process${variant.name.capitalize()}Resources/out"
+        }
         new File(processedResOutDirPath, "res").deleteDir()
 
-        new File(processedResOutDirPath).eachFileMatch(FileType.FILES, ~/^\S*\.ap_$/) { resApk ->
+        new File(processedResOutDirPath).eachFileMatch(FileType.FILES, ~/^\S*\.ap[_k]\u0024/) { resApk ->
             eachApk(resApk)
         }
         //追加日志
@@ -77,7 +86,9 @@ class CompressImg {
     }
 
     private void eachApk(File resApk) {
-        Utils.logI("ProcessResourceApk:" + resApk.name)
+        fileMd5List.clear()
+
+        Utils.logI("ProcessResourceApk:${resApk.parentFile.name}/${resApk.name}")
 
         def zipDir = new File(resApk.parentFile.absolutePath, resApk.name.split("\\.")[0])
         //删除遗留文件
@@ -100,10 +111,10 @@ class CompressImg {
                 def resFileName = resFile.name
                 def simpleName = "$resFile.parentFile.name/$resFileName"
 
-                if (!resFileName.contains(".9") && (resFileName.endsWith(".jpg") || resFileName.endsWith(".png") || resFileName.endsWith(".gif"))) {
+                if (resFile.length() > 0 && !resFileName.contains(".9") && (resFileName.endsWith(".jpg") || resFileName.endsWith(".png") || resFileName.endsWith(".gif"))) {
                     //白名单,文件跳过
                     if (whiteList.contains(resFileName)) {
-                        logFile.append("Skiped: ${simpleName} \n")
+                        logFile.append("Skipped: ${simpleName} : WhiteList\n")
                         return
                     }
 
@@ -146,6 +157,8 @@ class CompressImg {
                     logFile.append("Compress: ${simpleName}: ${resFileSize}->${newSize} DiffSize: ${diffSize} \n")
                     count++
                     compressSize += diffSize
+                } else {
+                    logFile.append("Skipped: ${simpleName} Size:${resFile.length()}\n")
                 }
             }
         }

@@ -15,8 +15,10 @@ android {
         debug {
         }
         release {
+            shrinkResources true
+            zipAlignEnabled true
             setSigningConfig(buildTypes.debug.signingConfig)
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -28,57 +30,57 @@ android {
         noCompress '.jpg', '.png'   //对所有.jpg文件不进行压缩
     }
 
-//    productFlavors {
-//        demo {
-//            dimension "mode"
-//        }
-//
-//        full {
-//            dimension "mode"
-//        }
-//
-//        minApi24 {
-//            dimension "api"
-//            minSdkVersion 24
-//            versionCode 30000 + android.defaultConfig.versionCode
-//            versionNameSuffix "-minApi24"
-//        }
-//
-//        minApi23 {
-//            dimension "api"
-//            minSdkVersion 23
-//            versionCode 20000 + android.defaultConfig.versionCode
-//            versionNameSuffix "-minApi23"
-//        }
-//
-//        minApi21 {
-//            dimension "api"
-//            minSdkVersion 21
-//            versionCode 10000 + android.defaultConfig.versionCode
-//            versionNameSuffix "-minApi21"
-//        }
-//    }
+    productFlavors {
+        demo {
+            dimension "mode"
+        }
 
-//    splits  {
-//        abi {
-//            enable true  //开启abi分包
-//            universalApk true  //是否创建一个包含所有有效动态库的apk
-//            reset()  //清空defaultConfig配置
-//            include 'x86','armeabi' //打出包含的包 这个是和defaultConfig累加的
-//            exclude 'mips'   //排除指定的cpu架构
-//        }
-//
-//        density {
-//            enable true  //开启density分包
-//            reset()  //清空所有默认值
-//            include 'xhdpi','xxhdpi'   //打出包含的包 这个是和默认值累加的
-//            exclude 'mdpi' //排除指定
-//        }
-//        language {
-//            enable true  //开启language分包
-//            include 'en','cn'  // 指定语言
-//        }
-//    }
+        full {
+            dimension "mode"
+        }
+
+        minApi24 {
+            dimension "api"
+            minSdkVersion 24
+            versionCode 30000 + android.defaultConfig.versionCode
+            versionNameSuffix "-minApi24"
+        }
+
+        minApi23 {
+            dimension "api"
+            minSdkVersion 23
+            versionCode 20000 + android.defaultConfig.versionCode
+            versionNameSuffix "-minApi23"
+        }
+
+        minApi21 {
+            dimension "api"
+            minSdkVersion 21
+            versionCode 10000 + android.defaultConfig.versionCode
+            versionNameSuffix "-minApi21"
+        }
+    }
+
+    splits  {
+        abi {
+            enable true  //开启abi分包
+            universalApk true  //是否创建一个包含所有有效动态库的apk
+            reset()  //清空defaultConfig配置
+            include 'x86','armeabi' //打出包含的包 这个是和defaultConfig累加的
+            exclude 'mips'   //排除指定的cpu架构
+        }
+
+        density {
+            enable true  //开启density分包
+            reset()  //清空所有默认值
+            include 'xhdpi','xxhdpi'   //打出包含的包 这个是和默认值累加的
+            exclude 'mdpi' //排除指定
+        }
+        language {
+            enable true  //开启language分包
+            include 'en','cn'  // 指定语言
+        }
+    }
 }
 afterEvaluate {
     tasks.each { task ->

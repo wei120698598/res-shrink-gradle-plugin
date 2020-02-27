@@ -279,6 +279,9 @@ class Utils {
 
 
     static String getMD5(File file) {
+        if (file.length() <= 0) {
+            return file.name
+        }
         FileInputStream fileInputStream = null
         try {
             MessageDigest MD5 = MessageDigest.getInstance("MD5")
