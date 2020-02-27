@@ -286,11 +286,12 @@ class Utils {
         try {
             MessageDigest MD5 = MessageDigest.getInstance("MD5")
             fileInputStream = new FileInputStream(file)
-            //只判断一部分
-            byte[] buffer = new byte[512]
-            MD5.update(buffer, 0, fileInputStream.read(buffer))
-            BigInteger bigInt = new BigInteger(1, MD5.digest())
-            return bigInt.toString(16)
+            byte[] buffer = new byte[1024]
+            int length
+            while ((length = fileInputStream.read(buffer)) != -1) {
+                MD5.update(buffer, 0, length)
+            }
+            return new BigInteger(1, MD5.digest()).toString(16)
         } catch (Exception e) {
             e.printStackTrace()
             return null
