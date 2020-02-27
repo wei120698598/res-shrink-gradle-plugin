@@ -30,7 +30,7 @@ archivesBaseName = "AndImg2WepPlugin"
 
 jar {
     manifest {
-        attributes "Manifest-Version": "2.0.5"
+        attributes "Manifest-Version": "2.0.7"
         attributes "Create-by": "shuxin.wei"
     }
 }

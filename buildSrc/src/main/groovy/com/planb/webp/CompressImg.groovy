@@ -106,60 +106,65 @@ class CompressImg {
     private void eachResDir(File dir) {
         def isDelEnable = webpOptions.delImgRegex != null && webpOptions.delImgRegex.trim() != ""
         dir.eachDirMatch(~/drawable[a-z0-9-]*/) { resDir ->
-            resDir.eachFile(FileType.FILES) { resFile ->
-                def resFileSize = resFile.length()
+            resDir.eachFileMatch(~/^.*\.(jpg|png|gif)\u0024/) { resFile ->
                 def resFileName = resFile.name
+                if (resFileName.contains(".9")) {
+                    return
+                }
+                def resFileSize = resFile.length()
                 def simpleName = "$resFile.parentFile.name/$resFileName"
 
-                if (resFile.length() > 0 && !resFileName.contains(".9") && (resFileName.endsWith(".jpg") || resFileName.endsWith(".png") || resFileName.endsWith(".gif"))) {
-                    //白名单,文件跳过
-                    if (whiteList.contains(resFileName)) {
-                        logFile.append("Skipped: ${simpleName} : WhiteList\n")
-                        return
-                    }
-
-                    //黑名单，文件删除
-                    if (isDelEnable && resFileName.matches(webpOptions.delImgRegex)) {
-                        resFile.delete()
-                        logFile.append("Del: ${simpleName}: ${resFileSize}->0\n")
-                        compressSize += resFileSize
-                        return
-                    }
-
-                    def outFile = new File("$processedResOutDirPath/res/${resFile.parentFile.name}", resFile.name)
-                    if (outFile.exists()) {
-                        Utils.copy(outFile, resFile)
-                        return
-                    }
-                    if (!outFile.parentFile.exists()) {
-                        outFile.parentFile.mkdirs()
-                    }
-
-                    //文件查重
-                    if (webpOptions.checkDuplicate) {
-                        def md5 = Utils.getMD5(resFile)
-                        def fileName = fileMd5List.get(md5)
-                        if (fileName != null) {
-                            def logMsg = "Duplicate MD5 ${md5}: ${fileName} = ${simpleName}"
-                            Utils.logE(logMsg)
-                            logFile.append("${logMsg}\n")
-                        }
-                        fileMd5List.put(md5, simpleName)
-                    }
-
-                    //文件转换
-                    if ("${webpLibPath}/bin/${resFileName.endsWith(".gif") ? "gif2webp" : "cwebp"}  -q ${webpOptions.quality} -m 6 ${resFile} -o ${outFile} ".execute().waitFor() != 0) {
-                        throw new RuntimeException("${resFile} error ")
-                    }
-                    Utils.copy(outFile, resFile)
-                    def newSize = resFile.length()
-                    def diffSize = resFileSize - newSize
-                    logFile.append("Compress: ${simpleName}: ${resFileSize}->${newSize} DiffSize: ${diffSize} \n")
-                    count++
-                    compressSize += diffSize
-                } else {
-                    logFile.append("Skipped: ${simpleName} Size:${resFile.length()}\n")
+                if (resFile.length() <= 0) {
+                    logFile.append("Skipped ${simpleName}  Reason(Size ${resFile.length()} bytes)\n")
+                    return
                 }
+
+                //白名单,文件跳过
+                if (whiteList.contains(resFileName)) {
+                    logFile.append("Skipped ${simpleName}  Reason(in white list)\n")
+                    return
+                }
+
+                //黑名单，文件删除
+                if (isDelEnable && resFileName.matches(webpOptions.delImgRegex)) {
+                    resFile.delete()
+                    logFile.append("Del ${simpleName}  DiffSize(${resFileSize}->0=$resFileSize bytes)\n")
+                    compressSize += resFileSize
+                    return
+                }
+
+                def outFile = new File("$processedResOutDirPath/res/${resFile.parentFile.name}", resFile.name)
+                if (outFile.exists()) {
+                    Utils.copy(outFile, resFile)
+                    return
+                }
+                if (!outFile.parentFile.exists()) {
+                    outFile.parentFile.mkdirs()
+                }
+
+                //文件查重
+                if (webpOptions.checkDuplicate) {
+                    def md5 = Utils.getMD5(resFile)
+                    def fileName = fileMd5List.get(md5)
+                    if (fileName != null) {
+                        def logMsg = "Duplicate or unused ${fileName}=${simpleName}  MD5(${md5})"
+                        Utils.logE(logMsg)
+                        logFile.append("${logMsg}\n")
+                    }
+                    fileMd5List.put(md5, simpleName)
+                }
+
+                //文件转换
+                if ("${webpLibPath}/bin/${resFileName.endsWith(".gif") ? "gif2webp" : "cwebp"}  -q ${webpOptions.quality} -m 6 ${resFile} -o ${outFile} ".execute().waitFor() != 0) {
+                    throw new RuntimeException("${resFile} error ")
+                }
+                Utils.copy(outFile, resFile)
+                def newSize = resFile.length()
+                def diffSize = resFileSize - newSize
+                logFile.append("Compress ${simpleName}  DiffSize(${resFileSize}->${newSize}=${diffSize} bytes)\n")
+                count++
+                compressSize += diffSize
+
             }
         }
     }
