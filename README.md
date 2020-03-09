@@ -47,7 +47,7 @@ Add it in your application build.gralde.
 ```groovy
 afterEvaluate {
     tasks.each { task ->
-        if (task.name == "img2webpDebug") {
+        if (task.name.toLowerCase().contains("img2webp") && task.name.toLowerCase().contains("debug")) {
             task.enabled = false
         }
     }
