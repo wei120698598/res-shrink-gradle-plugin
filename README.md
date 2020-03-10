@@ -80,5 +80,5 @@ Do not confuse resource files, use `-keep`.<br>
 Resource files to delete, use `-assumenosideeffects`.<br>
 Flatten package hierarchy, use `-flattenpackagehierarchy`.<br>
 Increase security, hide file extensions, use `-optimizations`.<br>
-# Convert image log
+# Plugin log
 res-shrink-gradle-plugin will generate `{app}/build/outputs/webp/{buildType}/res-shrink-plugin-report.txt` file when built finish.
