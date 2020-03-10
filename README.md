@@ -11,26 +11,26 @@ The plugin is work for aapt and aaptv2.
 
 Step 1. Add it in your root build.gradle at the end of repositories:
 ```groovy
-    buildscript {
-        repositories {
-            ...
-            maven { url 'https://jitpack.io' }
-    	}
-    	dependencies {
-            ...
-            classpath "com.github.wei120698598:res-shrink-gradle-plugin:Tag"
-        }
+buildscript {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+	}
+	dependencies {
+        ...
+        classpath "com.github.wei120698598:res-shrink-gradle-plugin:Tag"
     }
+}
 ```
 Step 2. Apply the plugin in your application build.gralde.
 ```groovy
-    apply plugin: 'com.planb.res.shrink'
+apply plugin: 'com.planb.res.shrink'
 ```
 
 Share this release:
 [![](https://jitpack.io/v/wei120698598/res-shrink-gradle-plugin.svg)](https://jitpack.io/#wei120698598/res-shrink-gradle-plugin)
 
-# Config Webp Plugin
+# Config Plugin
 You can set some options for webp-gradle-plugin.
 
 ```groovy
@@ -57,7 +57,7 @@ ResShrinkOptions {
     File rulesFile
 }
 ```
-# Configure webp plugin enabled in different build types
+# Configure plugin enabled in different build types
 Add it in your application build.gralde.
 ```groovy
 afterEvaluate {
