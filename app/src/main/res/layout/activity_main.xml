@@ -3,12 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.planb.webp.MainActivity">
+    tools:context="com.planb.res.MainActivity">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/img1"
+        android:text="Hello World!" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@mipmap/aaa"
         android:text="Hello World!" />
-
 </LinearLayout>

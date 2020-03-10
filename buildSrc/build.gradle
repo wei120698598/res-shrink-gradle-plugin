@@ -25,19 +25,18 @@ apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.wei120698598'
 
-archivesBaseName = "AndImg2WepPlugin"
+archivesBaseName = "AndResShrinkPlugin"
 
 
 jar {
     manifest {
-        attributes "Manifest-Version": "2.0.7"
+        attributes "Manifest-Version": "3.0.0"
         attributes "Create-by": "shuxin.wei"
     }
 }
 
 javadoc {
     failOnError = false
-    options.jFlags("-Xdoclint:none")
 }
 
 // 打包源码jar
