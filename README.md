@@ -1,5 +1,4 @@
-# res-shrink-gradle-plugin [![](https://jitpack.io/v/wei120698598/img2webp.svg)](https://jitpack.io/#wei120698598/img2webp)
-
+# res-shrink-gradle-plugin [![](https://jitpack.io/v/wei120698598/res-shrink-gradle-plugin.svg)](https://jitpack.io/#wei120698598/res-shrink-gradle-plugin)
 `res-shrink-gradle-plugin` has the following features for Android
 1. Convert PNG/JPG/GIF to WEBP, shrink images;
 2. Check duplicate resource;
