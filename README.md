@@ -28,8 +28,7 @@ Step 2. Apply the plugin in your application build.gralde.
 ```
 
 Share this release:
-[![](https://jitpack.io/v/wei120698598/img2webp.svg)](https://jitpack.io/#wei120698598/img2webp)
-
+[![](https://jitpack.io/v/wei120698598/res-shrink-gradle-plugin.svg)](https://jitpack.io/#wei120698598/res-shrink-gradle-plugin)
 
 # Config Webp Plugin
 You can set some options for webp-gradle-plugin.
