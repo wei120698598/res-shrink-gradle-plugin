@@ -30,6 +30,9 @@ class WebpPlugin implements Plugin<Project> {
                     doFirst {
                         new CompressImg(project, variant, webpOptions).compress()
                     }
+                    doLast {
+
+                    }
                     project.tasks.findByName(imageConvertTask).dependsOn hookTask.taskDependencies.getDependencies(hookTask)
                     hookTask.dependsOn project.tasks.findByName(imageConvertTask)
                 }.enabled = webpOptions.enabled

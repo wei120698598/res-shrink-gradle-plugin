@@ -1,5 +1,7 @@
 package com.planb.webp
 
+import proguard.util.FileNameParser
+import proguard.util.StringMatcher
 
 import java.security.MessageDigest
 import java.util.jar.JarEntry
@@ -306,4 +308,23 @@ class Utils {
         }
     }
 
+    static boolean matchRules(String fileName, Set<String> rules) {
+
+        return fileName != null && rules != null && rules.contains(fileName)
+    }
+
+    static void main(String[] args) {
+        try {
+            System.out.println("Regular expression [" + args[0] + "]");
+            FileNameParser parser = new FileNameParser();
+            StringMatcher matcher = parser.parse(args[0]);
+            for (int index = 1; index < args.length; index++) {
+                String string = args[index];
+                System.out.print("String             [" + string + "]");
+                System.out.println(" -> match = " + matcher.matches(args[index]));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }

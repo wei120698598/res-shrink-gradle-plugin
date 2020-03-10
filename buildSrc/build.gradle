@@ -35,9 +35,14 @@ jar {
     }
 }
 
+javadoc {
+    failOnError = false
+    options.jFlags("-Xdoclint:none")
+}
+
 // 打包源码jar
 task sourcesJar(type: Jar) {
-    from sourceSets.main.java.srcDirs
+    from sourceSets.main.java.srcDirs,sourceSets.main.groovy.srcDirs
     classifier = 'sources'
 }
 
@@ -58,10 +63,11 @@ dependencies {
     implementation gradleApi()
     implementation localGroovy()
     implementation 'com.android.tools.build:gradle:3.5.3'
+    testImplementation 'junit:junit:4.12'
 }
 
 
-task copyImg(type:Copy){
+task copyImg(type: Copy) {
     for (int i = 200; i < 400; i++) {
         "cp /Users/weishuxin/maoyan/work/AndWebp/app/src/main/res/drawable/img2.jpg /Users/weishuxin/maoyan/work/AndWebp/app/src/main/res/drawable/img${i}.jpg ".execute()
     }
