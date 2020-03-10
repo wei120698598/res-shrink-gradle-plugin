@@ -18,7 +18,7 @@ Step 1. Add it in your root build.gradle at the end of repositories:
     	}
     	dependencies {
             ...
-            classpath "com.github.wei120698598:webp-gradle-plugin:Tag"
+            classpath "com.github.wei120698598:res-shrink-gradle-plugin:Tag"
         }
     }
 ```
