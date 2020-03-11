@@ -3,13 +3,13 @@ package com.planb.res;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.zanfou.webp.R;
+import com.zanfou.webp.databinding.ActivityMainBinding;
 
 public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(ActivityMainBinding.inflate(getLayoutInflater()).getRoot());
     }
 }

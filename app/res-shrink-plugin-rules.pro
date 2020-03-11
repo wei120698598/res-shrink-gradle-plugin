@@ -12,6 +12,5 @@
 
 -dontshrink ic*.png #这是注释
 -keep aaa.png #这是注释
--keep activity_main.xml #这是注释
 -keep res/mipmap-anydpi-v26/** #这是注释
 -assumenosideeffects img0.jpg #这是注释

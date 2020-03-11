@@ -117,7 +117,7 @@ class CompressImg {
         //解压res_apk
         Utils.unzip(resApk.absolutePath, zipDir.absolutePath)
         //删除原res_apk
-        resApk.delete()
+        resApk.renameTo(resApk.canonicalPath + ".old")
         //img2webp
         eachResDir(new File(zipDir, "res"))
         //proguard
