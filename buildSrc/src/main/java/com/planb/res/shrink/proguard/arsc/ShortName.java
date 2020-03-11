@@ -9,8 +9,9 @@ public class ShortName {
     }
     public void next() {
         if (c == '9') {
-            c = 'A';
-        } else if (c == 'Z') {
+            //部分系统不区分大小写，比如Mac
+            //            c = 'A';
+            //        } else if (c == 'Z') {
             c = 'a';
         } else if (c == 'z') {
             c = '0';
