@@ -188,9 +188,9 @@ class CompressImg {
                             map.put(s, newName)
                             logFile.append(Logs.PROGUARD.format(s, newName))
                         }
+                        //renameTo = copy + del
                         resFile.renameTo(new File(zipDir, newName))
                         arscFile.setString(i, newName)
-                        resFile.delete()
                         break
                     }
                 }
