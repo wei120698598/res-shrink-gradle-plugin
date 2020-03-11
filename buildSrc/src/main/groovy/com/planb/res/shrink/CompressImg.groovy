@@ -128,6 +128,9 @@ class CompressImg {
 
 
     private void proguard(File zipDir, File logFile) {
+        if (!options.removeImgEnabled && !options.checkDuplicateEnabled && !options.resProguardEnabled) {
+            return
+        }
         ArscFile arscFile = null
         new File(zipDir, "res${File.separator}").eachDir { resDir ->
             resDir.eachFile { resFile ->
