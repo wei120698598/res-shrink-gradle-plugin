@@ -61,7 +61,7 @@ Add it in your application build.gralde.
 ```groovy
 afterEvaluate {
     tasks.each { task ->
-        if (task.name.toLowerCase().contains("resShrink") && task.name.toLowerCase().contains("debug")) {
+        if (task.name.toLowerCase().contains("resshrink") && task.name.toLowerCase().contains("debug")) {
             task.enabled = false
         }
     }

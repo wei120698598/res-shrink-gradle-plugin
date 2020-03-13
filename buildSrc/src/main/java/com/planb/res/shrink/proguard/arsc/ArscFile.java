@@ -1,17 +1,19 @@
 package com.planb.res.shrink.proguard.arsc;
 
+import com.planb.res.shrink.proguard.io.ZInput;
+import com.planb.res.shrink.proguard.io.ZOutput;
+
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import com.planb.res.shrink.proguard.io.ZInput;
-import com.planb.res.shrink.proguard.io.ZOutput;
-
 public class ArscFile {
     private short typeTableNext;
 
-//	private static final short CHECK_PACKAGE = 0x0200;
+    //	private static final short CHECK_PACKAGE = 0x0200;
 
     private ZInput mIn;
     private int packageCount;
@@ -20,10 +22,19 @@ public class ArscFile {
     private byte[] PackageBytes;
     private com.planb.res.shrink.proguard.arsc.Header mHeader;
 
+    public static void main(String[] args) {
+        try {
+            ArscFile arscFile = ArscFile.decodeArsc(new FileInputStream(new File(
+                    "/Users/weishuxin/maoyan/work/AndWebp/buildSrc", "resources.arsc")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static ArscFile decodeArsc(InputStream in) throws IOException {
         ArscFile arsc = new ArscFile(new ZInput(in));
         arsc.readTable();
+        //        arsc.readName();
         return arsc;
     }
 
@@ -39,10 +50,9 @@ public class ArscFile {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ZOutput buf = new ZOutput(baos);
         buf.writeInt(arsc.packageCount);
-        arsc.mTableStrings.write(list2Strings(arsc.constantPool),
-                buf);
+        arsc.mTableStrings.write(list2Strings(arsc.constantPool), buf);
         buf.writeFully(arsc.PackageBytes);
-        out.writeShort(com.planb.res.shrink.proguard.arsc.Header.TYPE_TABLE);
+        out.writeShort(Header.TYPE_TABLE);
         out.writeShort(arsc.typeTableNext);
         out.writeInt(baos.size() + 8);
         out.writeFully(baos.toByteArray());
@@ -69,23 +79,32 @@ public class ArscFile {
     private void readTable() throws IOException {
         //readHeader
         short type = mIn.readShort();
-        checkChunk(type, com.planb.res.shrink.proguard.arsc.Header.TYPE_TABLE);
+
+        checkChunk(type, Header.TYPE_TABLE);
         typeTableNext = mIn.readShort();
         mIn.readInt();// chunk size
 
         packageCount = mIn.readInt();
-
         mTableStrings = StringDecoder.read(this.mIn);
 
         int size = mTableStrings.getSize();
-
         for (int i = 0; i < size; i++) {
             constantPool.add(mTableStrings.getString(i));
-//			Log.i("String", mTableStrings.getString(i));
         }
-//        value = new ArscValue[constantPool.size()];
-
         readPackageBytes();
+    }
+
+    private void readName() throws IOException {
+        //readHeader
+        short type = mIn.readShort();
+        System.out.println("shuxin:" + type);
+
+        type = mIn.readShort();
+        System.out.println("shuxin:" + type);
+        type = mIn.readShort();
+        System.out.println("shuxin:" + type);
+        type = mIn.readShort();
+        System.out.println("shuxin:" + type);
     }
 
     private void readPackageBytes() throws IOException {
@@ -99,7 +118,7 @@ public class ArscFile {
         byteOut.close();
     }
 
-    com.planb.res.shrink.proguard.arsc.Header nextChunk() throws IOException {
+    Header nextChunk() throws IOException {
         return mHeader = Header.read(mIn);
     }
 
@@ -116,10 +135,10 @@ public class ArscFile {
     }
 
     private void checkChunk(short type, short expectedType) throws IOException {
-        if (type != expectedType)
-            throw new IOException(String.format(
-                    "Invalid chunk type: expected=0x%08x, got=0x%08x",
+        if (type != expectedType) {
+            throw new IOException(String.format("Invalid chunk type: expected=0x%08x, got=0x%08x",
                     new Object[]{expectedType, type}));
+        }
     }
 
     private static String[] list2Strings(ArrayList<String> s) {

@@ -119,26 +119,87 @@ class CompressImg {
         //删除原res_apk
         resApk.renameTo(resApk.canonicalPath + ".old")
         //img2webp
-        eachResDir(new File(zipDir, "res"))
+        img2webp(new File(zipDir, "res"))
+        //resChecker
+        resChecker(zipDir)
         //proguard
-        proguard(zipDir, logFiles.get(Logs.PROGUARD))
+        resGuard(zipDir)
         //重新打包
         Utils.zip(resApk.absolutePath, zipDir.listFiles())
     }
 
+    private void resGuard(File zipDir) {
+        def logProguard = logFiles.get(Logs.PROGUARD)
+        def logKeep = logFiles.get(Logs.KEEP)
+        //不混淆
+        if (!options.resProguardEnabled) return
+        if (flattenPackageHierarchy) new File(zipDir, "r${File.separator}").mkdirs()
 
-    private void proguard(File zipDir, File logFile) {
-        if (!options.removeImgEnabled && !options.checkDuplicateEnabled && !options.resProguardEnabled) {
+        FileOutputStream arscFos = null
+        FileInputStream arscFis = null
+        try {
+            arscFis = new FileInputStream(new File(zipDir, "resources.arsc"))
+            ArscFile arscFile = ArscFile.decodeArsc(arscFis)
+
+            //重命名res内文件
+            for (int i = 0; i < arscFile.getStringSize(); i++) {
+                String s = arscFile.getString(i)
+                if (s.startsWith("res${File.separator}")) {
+                    def resFile = new File(zipDir, s)
+                    //keep
+                    if (!resFile.exists() || Utils.matchRules(resFile, keepList)) {
+                        logKeep.append(Logs.KEEP.format(s))
+                        return
+                    }
+                    String newName = map.get(s)
+                    if (newName == null) {
+                        if (flattenPackageHierarchy) {
+                            newName = "r${File.separator}${nm.getName()}"
+                        } else {
+                            newName = new File(s).parent + File.separator + nm.getName()
+                        }
+                        //拼接.9
+                        if (s.contains(".9.")) {
+                            newName += ".9"
+                        }
+                        if (!optimizations) {
+                            int idx = s.lastIndexOf('.')
+                            if (idx != -1) {
+                                newName += s.substring(idx)
+                            }
+                        }
+                        nm.next()
+                        map.put(s, newName)
+                        logProguard.append(Logs.PROGUARD.format(s, newName))
+                    }
+                    //renameTo = copy + del
+                    resFile.renameTo(new File(zipDir, newName))
+                    arscFile.setString(i, newName)
+                }
+            }
+
+            arscFos = new FileOutputStream(new File(zipDir, "resources.arsc"))
+            arscFos.write(ArscFile.encodeArsc(arscFile))
+        } finally {
+            arscFis.close()
+            arscFos?.close()
+        }
+    }
+
+
+    private void resChecker(File zipDir) {
+        if (!options.removeImgEnabled && !options.checkDuplicateEnabled) {
             return
         }
-        ArscFile arscFile = null
+        File logRemove = logFiles.get(Logs.REMOVED)
+        File logDuplicate = logFiles.get(Logs.DUPLICATE)
         new File(zipDir, "res${File.separator}").eachDir { resDir ->
             resDir.eachFile { resFile ->
                 def simpleName = "res${File.separator}${resFile.parentFile.name}/${resFile.name}"
                 //黑名单，文件删除
                 if (options.removeImgEnabled && Utils.matchRules(resFile, assumeNoSideEffectList)) {
                     resFile.delete()
-                    logFiles.get(Logs.REMOVED).append(Logs.REMOVED.format(simpleName, resFile.length(), 0, resFile.length()))
+                    logRemove.append(Logs.REMOVED.format(simpleName, resFile.length(), 0, resFile.length()))
                     compressSize += resFile.length()
                     return
                 }
@@ -148,69 +209,15 @@ class CompressImg {
                     def md5 = Utils.getMD5(resFile)
                     def fileName = fileMd5List.get(md5)
                     if (fileName != null) {
-                        logFiles.get(Logs.DUPLICATE).append(Logs.DUPLICATE.format(fileName, simpleName, md5))
+                        logDuplicate.append(Logs.DUPLICATE.format(fileName, simpleName, md5))
                     }
                     fileMd5List.put(md5, simpleName)
                 }
-
-                //不混淆
-                if (!options.resProguardEnabled) return
-                if (arscFile == null) {
-                    if (flattenPackageHierarchy) new File(zipDir, "r${File.separator}").mkdirs()
-                    arscFile = ArscFile.decodeArsc(new FileInputStream(new File(zipDir, "resources.arsc")))
-                }
-
-                //keep
-                if (Utils.matchRules(resFile, keepList)) {
-                    logFiles.get(Logs.KEEP).append(Logs.KEEP.format(simpleName))
-                    return
-                }
-
-                //重命名res内文件
-                for (int i = 0; i < arscFile.getStringSize(); i++) {
-                    String s = arscFile.getString(i)
-                    if (s.startsWith("res${File.separator}") && s == simpleName) {
-                        String newName = map.get(s)
-                        if (newName == null) {
-                            if (flattenPackageHierarchy) {
-                                newName = "r${File.separator}${nm.getName()}"
-                            } else {
-                                newName = new File(s).parent + File.separator + nm.getName()
-                            }
-                            //拼接.9
-                            if (s.contains(".9.")) {
-                                newName += ".9"
-                            }
-                            if (!optimizations) {
-                                int idx = s.lastIndexOf('.')
-                                if (idx != -1) {
-                                    newName += s.substring(idx)
-                                }
-                            }
-                            nm.next()
-                            map.put(s, newName)
-                            logFile.append(Logs.PROGUARD.format(s, newName))
-                        }
-                        //renameTo = copy + del
-                        resFile.renameTo(new File(zipDir, newName))
-                        arscFile.setString(i, newName)
-                        break
-                    }
-                }
-            }
-        }
-        if (options.resProguardEnabled) {
-            FileOutputStream arscFos = null
-            try {
-                arscFos = new FileOutputStream(new File(zipDir, "resources.arsc"))
-                arscFos.write(ArscFile.encodeArsc(arscFile))
-            } finally {
-                arscFos?.close()
             }
         }
     }
 
-    private void eachResDir(File dir) {
+    private void img2webp(File dir) {
         dir.eachDirMatch(~/drawable[a-z0-9-]*/) { resDir ->
             resDir.eachFileMatch(~/^.*\.(jpg|png|gif)\u0024/) { resFile ->
                 def resFileName = resFile.name
