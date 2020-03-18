@@ -56,10 +56,10 @@ class CompressImg {
         if (report.exists()) report.delete()
         report.parentFile.mkdirs()
         report.createNewFile()
-        //添加文件头
-        report.append(Logs.HEADER.format(project.android.defaultConfig.versionName, options.toString()))
         //编译准备
-        prepare(){
+        prepare() {
+            //添加文件头
+            report.append(Logs.HEADER.format(project.android.defaultConfig.versionName, options.toString() + ", optimizations=$optimizations, flattenPackageHierarchy=$flattenPackageHierarchy"))
             //添加Rules
             report.append(Logs.RULES.format("Keep", keepList.toString()))
             report.append(Logs.RULES.format("Skipp", notShrinkList.toString()))
