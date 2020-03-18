@@ -13,7 +13,8 @@ import org.gradle.api.Project
  * <p>
  */
 class CompressImg {
-    private static HashMap<String, String> map = new HashSet<>()
+    //flavor时task会运行多次
+    private static HashMap<String, String> map = new HashMap<>()
     private static ShortName nm = new ShortName()
     private Set<String> keepList = new HashSet<>()
     private Set<String> notShrinkList = new HashSet<>()
