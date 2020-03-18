@@ -20,7 +20,7 @@ public class ArscFile {
     private StringDecoder mTableStrings;
     private ArrayList<String> constantPool = new ArrayList<>();
     private byte[] PackageBytes;
-    private com.planb.res.shrink.proguard.arsc.Header mHeader;
+    private Header mHeader;
 
     public static void main(String[] args) {
         try {

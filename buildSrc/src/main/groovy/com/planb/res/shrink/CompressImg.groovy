@@ -62,7 +62,7 @@ class CompressImg {
             report.append(Logs.HEADER.format(project.android.defaultConfig.versionName, options.toString() + ", optimizations=$optimizations, flattenPackageHierarchy=$flattenPackageHierarchy"))
             //添加Rules
             report.append(Logs.RULES.format("Keep", keepList.toString()))
-            report.append(Logs.RULES.format("Skipp", notShrinkList.toString()))
+            report.append(Logs.RULES.format("Skip", notShrinkList.toString()))
             report.append(Logs.RULES.format("Remove", assumeNoSideEffectList.toString() + "\n"))
         }
 
@@ -169,7 +169,7 @@ class CompressImg {
                     //keep
                     if (!resFile.exists() || Utils.matchRules(resFile, keepList)) {
                         logKeep.append(Logs.KEEP.format(s))
-                        return
+                        continue
                     }
                     String newName = map.get(s)
                     if (newName == null) {
@@ -201,7 +201,7 @@ class CompressImg {
             arscFos = new FileOutputStream(new File(zipDir, "resources.arsc"))
             arscFos.write(ArscFile.encodeArsc(arscFile))
         } finally {
-            arscFis.close()
+            arscFis?.close()
             arscFos?.close()
         }
     }
