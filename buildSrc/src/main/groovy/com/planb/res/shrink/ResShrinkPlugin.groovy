@@ -53,7 +53,7 @@ class ResShrinkPlugin implements Plugin<Project> {
         //remove image by the regex, default null.
         def removeImgEnabled = true
         //enable resource proguard, enable
-        def resProguardEnabled = true
+        def resProguardEnabled = false
         //print log, default true.
         def logEnabled = true
         //res-shrink-plugin-rules.pro file.

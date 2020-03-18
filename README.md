@@ -79,4 +79,4 @@ Resource files to delete, use `-assumenosideeffects`.<br>
 Flatten package hierarchy, use `-flattenpackagehierarchy`.<br>
 Increase security, hide file extensions, use `-optimizations`.<br>
 # Plugin log
-res-shrink-gradle-plugin will generate `{app}/build/outputs/webp/{buildType}/res-shrink-plugin-report.txt` file when built finish.
+res-shrink-gradle-plugin will generate `{app}/build/outputs/mapping/{buildType}/res-shrink-plugin-report.txt` file when built finish.

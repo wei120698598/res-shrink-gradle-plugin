@@ -32,6 +32,7 @@ class CompressImg {
     private File intermediatesDir
     private boolean useResourceShrinker
     private Map<String, File> logFiles = new LinkedHashMap<>()
+    private Set<String> skippedRes = new HashSet<>()
     private boolean flattenPackageHierarchy = false
     private boolean optimizations = false
 
@@ -51,18 +52,20 @@ class CompressImg {
         def startTime = System.currentTimeMillis()
         //合并日志
         //日志文件
-        def report = new File("${variantData.getScope().getGlobalScope().getOutputsDir()}${File.separator}resshrink${File.separator}${buildTypeName}", "res-shrink-plugin-${variantData.getVariantConfiguration().getBaseName()}-report.txt")
+        def report = new File(variantData.getScope().getOutputProguardMappingFile().parentFile, "res-shrink-plugin-report.txt")
         if (report.exists()) report.delete()
         report.parentFile.mkdirs()
         report.createNewFile()
         //添加文件头
         report.append(Logs.HEADER.format(project.android.defaultConfig.versionName, options.toString()))
         //编译准备
-        prepare()
-        //添加Rules
-        report.append(Logs.RULES.format("Keep", keepList.toString()))
-        report.append(Logs.RULES.format("Skipp", notShrinkList.toString()))
-        report.append(Logs.RULES.format("Remove", assumeNoSideEffectList.toString() + "\n"))
+        prepare(){
+            //添加Rules
+            report.append(Logs.RULES.format("Keep", keepList.toString()))
+            report.append(Logs.RULES.format("Skipp", notShrinkList.toString()))
+            report.append(Logs.RULES.format("Remove", assumeNoSideEffectList.toString() + "\n"))
+        }
+
 
         new File(processedResOutDirPath).eachFileMatch(FileType.FILES, ~/^\S*\.ap[_k]\u0024/) {
             eachApk(it)
@@ -83,7 +86,7 @@ class CompressImg {
         report.append(msg)
     }
 
-    private void prepare() {
+    private void prepare(Closure closure) {
         //拷贝依赖库
         webpLibPath = Utils.copyWebpLib(project.buildDir.absolutePath)
         //加载白名单
@@ -107,6 +110,23 @@ class CompressImg {
         logFiles.put(Logs.REMOVED, new File(processedResOutDirPath, "log${File.separator}res-${Logs.REMOVED.name()}-report.txt"))
         logFiles.put(Logs.DUPLICATE, new File(processedResOutDirPath, "log${File.separator}res-${Logs.DUPLICATE.name()}-report.txt"))
         logFiles.values().forEach { it.createNewFile() }
+        closure()
+        if (useResourceShrinker) {
+            //读取skipped资源
+            def resources = new File(variantData.getScope().getOutputProguardMappingFile().parent, "resources.txt")
+            if (resources.exists()) {
+                def logFile = logFiles.get(Logs.SKIPPED)
+                resources.eachLine('UTF-8') {
+                    def index = it.indexOf("Skipped unused resource ")
+                    if (index != -1) {
+                        def resPath = it.substring(index + "Skipped unused resource ".length(), it.lastIndexOf(": ")).trim()
+                        logFile.append(Logs.SKIPPED.format(resPath, "Unused"))
+                        skippedRes.add(resPath)
+                    }
+                }
+            }
+        }
+
     }
 
     private void eachApk(File resApk) {
@@ -195,7 +215,7 @@ class CompressImg {
         File logDuplicate = logFiles.get(Logs.DUPLICATE)
         new File(zipDir, "res${File.separator}").eachDir { resDir ->
             resDir.eachFile { resFile ->
-                def simpleName = "res${File.separator}${resFile.parentFile.name}/${resFile.name}"
+                String simpleName = "res/${resFile.parentFile.name}/${resFile.name}"
                 //黑名单，文件删除
                 if (options.removeImgEnabled && Utils.matchRules(resFile, assumeNoSideEffectList)) {
                     resFile.delete()
@@ -205,13 +225,13 @@ class CompressImg {
                 }
 
                 //文件查重
-                if (options.checkDuplicateEnabled) {
+                if (options.checkDuplicateEnabled && !skippedRes.contains(simpleName)) {
                     def md5 = Utils.getMD5(resFile)
                     def fileName = fileMd5List.get(md5)
                     if (fileName != null) {
                         logDuplicate.append(Logs.DUPLICATE.format(fileName, simpleName, md5))
-                    }
-                    fileMd5List.put(md5, simpleName)
+                    } else
+                        fileMd5List.put(md5, simpleName)
                 }
             }
         }
@@ -228,6 +248,9 @@ class CompressImg {
                 def simpleName = "res$File.separator$resFile.parentFile.name/$resFileName"
 
                 //size为0，可能是使用了gradle shrinkResources，不需要再压缩了
+                if (skippedRes.contains(simpleName)) {
+                    return
+                }
                 if (resFile.length() <= 0) {
                     logFiles.get(Logs.SKIPPED).append(Logs.SKIPPED.format(simpleName, "Size ${resFile.length()} bytes"))
                     return
