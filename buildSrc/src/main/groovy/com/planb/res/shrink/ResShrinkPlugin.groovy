@@ -5,7 +5,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 /**
- * @author shuxin.wei email:weishuxin@maoyan.com
+ * @author shuxin.wei email:weishuxin@163.com
  * @version v1.webp-libs-100.webp-libs-100* @date 2020-01-26
  * <p>
  * desc:

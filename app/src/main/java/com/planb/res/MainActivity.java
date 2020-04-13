@@ -4,8 +4,8 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.zanfou.webp.R;
-import com.zanfou.webp.databinding.ActivityMainBinding;
+import com.planb.webp.R;
+import com.planb.webp.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 

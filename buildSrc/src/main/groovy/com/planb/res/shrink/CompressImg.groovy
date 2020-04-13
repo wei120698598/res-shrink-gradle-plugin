@@ -8,7 +8,7 @@ import groovy.io.FileType
 import org.gradle.api.Project
 
 /**
- * @author shuxin.wei email:weishuxin@maoyan.com
+ * @author shuxin.wei email:weishuxin@163.com
  * @version v1.0.0* @date 2020-02-15
  * <p>
  */

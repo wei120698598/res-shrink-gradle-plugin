@@ -25,7 +25,7 @@ public class ArscFile {
     public static void main(String[] args) {
         try {
             ArscFile arscFile = ArscFile.decodeArsc(new FileInputStream(new File(
-                    "/Users/weishuxin/maoyan/work/AndWebp/buildSrc", "resources.arsc")));
+                    "/Users/weishuxin/163/work/AndWebp/buildSrc", "resources.arsc")));
         } catch (IOException e) {
             e.printStackTrace();
         }

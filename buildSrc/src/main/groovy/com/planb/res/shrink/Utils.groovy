@@ -11,7 +11,7 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 /**
- * @author shuxin.wei email:weishuxin@maoyan.com
+ * @author shuxin.wei email:weishuxin@163.com
  */
 class Utils {
     static String WEBP_LIB_BIN_PATH
