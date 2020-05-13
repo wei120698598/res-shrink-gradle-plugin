@@ -30,7 +30,7 @@ archivesBaseName = "AndResShrinkPlugin"
 
 jar {
     manifest {
-        attributes "Manifest-Version": "3.1.0"
+        attributes "Manifest-Version": "3.1.1"
         attributes "Create-by": "shuxin.wei"
     }
 }

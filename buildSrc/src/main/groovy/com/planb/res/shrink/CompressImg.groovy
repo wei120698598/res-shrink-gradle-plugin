@@ -81,6 +81,8 @@ class CompressImg {
         report.append(logFiles.get(Logs.REMOVED).getText())
         report.append(logFiles.get(Logs.DUPLICATE).getText())
         report.append("\n")
+        report.append(logFiles.get(Logs.REPLACE).getText())
+        report.append("\n")
         //追加日志
         def msg = "${(System.currentTimeMillis() - startTime) / 1000.0f}s to process $count images. Compress size:${String.format("%.2f", compressSize / 1024.0f)}kb"
         Utils.logI(msg)
@@ -107,6 +109,7 @@ class CompressImg {
         logFiles.put(Logs.SHRINK, new File(processedResOutDirPath, "log${File.separator}res-${Logs.SHRINK.name()}-report.txt"))
         logFiles.put(Logs.SKIPPED, new File(processedResOutDirPath, "log${File.separator}res-${Logs.SKIPPED.name()}-report.txt"))
         logFiles.put(Logs.PROGUARD, new File(processedResOutDirPath, "log${File.separator}res-${Logs.PROGUARD.name()}-report.txt"))
+        logFiles.put(Logs.REPLACE, new File(processedResOutDirPath, "log${File.separator}res-${Logs.REPLACE.name()}-report.txt"))
         logFiles.put(Logs.KEEP, new File(processedResOutDirPath, "log${File.separator}res-${Logs.KEEP.name()}-report.txt"))
         logFiles.put(Logs.REMOVED, new File(processedResOutDirPath, "log${File.separator}res-${Logs.REMOVED.name()}-report.txt"))
         logFiles.put(Logs.DUPLICATE, new File(processedResOutDirPath, "log${File.separator}res-${Logs.DUPLICATE.name()}-report.txt"))
@@ -177,6 +180,8 @@ class CompressImg {
                         def resName = fileMd5List.get(md5)
                         //是重复的资源
                         if (resName != null && s != resName) {
+                            compressSize += resFile.length()
+                            logFiles.get(Logs.REPLACE).append(Logs.REPLACE.format(s, resFile.length(), resFile.length()))
                             resFile.delete()
                             //不混淆直接替换资源名
                             if (!options.resProguardEnabled) {
@@ -188,7 +193,7 @@ class CompressImg {
                             }
                         }
                     }
-                    if (!options.resProguardEnabled){
+                    if (!options.resProguardEnabled) {
                         continue
                     }
                     String newName = map.get(s)
@@ -383,6 +388,7 @@ class CompressImg {
         PROGUARD("Proguard %s -> %s\r\n"),
         KEEP("Keep %s\r\n"),
         REMOVED("Removed %s  DiffSize(%d->%d=%d bytes)\r\n"),
+        REPLACE("Replace %s  DiffSize(%d->0=%d bytes)\r\n"),
         DUPLICATE("Duplicate %s = %s  MD5(%s)\r\n"),
         HEADER("AppVersion: %s\r\n%s\r\n\n"),
         RULES("%sRules: %s\n"),
@@ -395,10 +401,12 @@ class CompressImg {
 
         String format(Object... objects) {
             def log = String.format(format, objects)
-            if (this == DUPLICATE) {
-                Utils.logE(log)
-            } else if (CompressImg.options.logEnabled) {
-                Utils.logI(log)
+            if (CompressImg.options.logEnabled) {
+                if (this == DUPLICATE) {
+                    Utils.logE(log)
+                } else {
+                    Utils.logI(log)
+                }
             }
             return log
         }
