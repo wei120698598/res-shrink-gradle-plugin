@@ -6,7 +6,8 @@ import org.gradle.api.Project
 
 /**
  * @author shuxin.wei email:weishuxin@163.com
- * @version v1.webp-libs-100.webp-libs-100* @date 2020-01-26
+ * @version v1.webp-libs-100
+ * @date 2020-01-26
  * <p>
  * desc:
  */
@@ -48,10 +49,13 @@ class ResShrinkPlugin implements Plugin<Project> {
         def enabled = true
         //convert quality 0-100,suggest 50-100, default 75.
         def quality = 75
+        //compress image
+        def compressImgEnabled = true
         //check image is duplicate, if both size equal, console will show error message , default true.
         def checkDuplicateEnabled = true
         //remove image by the regex, default null.
         def removeImgEnabled = true
+        def removeDuplicateEnabled = true
         //enable resource proguard, enable
         def resProguardEnabled = true
         //print log, default true.

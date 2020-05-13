@@ -33,7 +33,7 @@ Share this release:
 You can set some options for webp-gradle-plugin.
 
 ```groovy
-ResShrinkOptions {
+resShrinkOptions {
     //enable plugin, default true.
     def enabled = true
     

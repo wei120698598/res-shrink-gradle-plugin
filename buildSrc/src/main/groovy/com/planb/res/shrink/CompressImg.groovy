@@ -153,7 +153,7 @@ class CompressImg {
         def logProguard = logFiles.get(Logs.PROGUARD)
         def logKeep = logFiles.get(Logs.KEEP)
         //不混淆
-        if (!options.resProguardEnabled) return
+        if (!options.resProguardEnabled && !options.removeDuplicateEnabled) return
         if (flattenPackageHierarchy) new File(zipDir, "r${File.separator}").mkdirs()
 
         FileOutputStream arscFos = null
@@ -170,6 +170,25 @@ class CompressImg {
                     //keep
                     if (!resFile.exists() || Utils.matchRules(resFile, keepList)) {
                         logKeep.append(Logs.KEEP.format(s))
+                        continue
+                    }
+                    if (options.removeDuplicateEnabled) {
+                        def md5 = Utils.getMD5(resFile)
+                        def resName = fileMd5List.get(md5)
+                        //是重复的资源
+                        if (resName != null && s != resName) {
+                            resFile.delete()
+                            //不混淆直接替换资源名
+                            if (!options.resProguardEnabled) {
+                                arscFile.setString(i, resName)
+                            }
+                            //混淆直接以保留的文件为新的名称去查找混淆
+                            else {
+                                s = resName
+                            }
+                        }
+                    }
+                    if (!options.resProguardEnabled){
                         continue
                     }
                     String newName = map.get(s)
@@ -231,14 +250,16 @@ class CompressImg {
                     def fileName = fileMd5List.get(md5)
                     if (fileName != null) {
                         logDuplicate.append(Logs.DUPLICATE.format(fileName, simpleName, md5))
-                    } else
+                    } else {
                         fileMd5List.put(md5, simpleName)
+                    }
                 }
             }
         }
     }
 
     private void img2webp(File dir) {
+        if (!options.compressImgEnabled) return
         dir.eachDirMatch(~/drawable[a-z0-9-]*/) { resDir ->
             resDir.eachFileMatch(~/^.*\.(jpg|png|gif)\u0024/) { resFile ->
                 def resFileName = resFile.name
