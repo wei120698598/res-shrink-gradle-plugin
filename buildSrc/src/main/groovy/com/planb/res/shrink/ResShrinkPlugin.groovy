@@ -49,13 +49,14 @@ class ResShrinkPlugin implements Plugin<Project> {
         def enabled = true
         //convert quality 0-100,suggest 50-100, default 75.
         def quality = 75
-        //compress image
+        //convert PNG/JPG/GIF to Webp.
         def compressImgEnabled = true
         //check image is duplicate, if both size equal, console will show error message , default true.
-        def checkDuplicateEnabled = true
+        def checkDuplicateResEnabled = true
+        //replace duplicate resource file with one of them.
+        def replaceDuplicateResEnabled = true
         //remove image by the regex, default null.
         def removeImgEnabled = true
-        def removeDuplicateEnabled = true
         //enable resource proguard, enable
         def resProguardEnabled = true
         //print log, default true.
@@ -68,7 +69,8 @@ class ResShrinkPlugin implements Plugin<Project> {
             return "ResShrinkOptions: " +
                     "enable=" + enabled +
                     ", quality=" + quality +
-                    ", checkDuplicate=" + checkDuplicateEnabled +
+                    ", checkDuplicateRes=" + checkDuplicateResEnabled +
+                    ", replaceDuplicateRes=" + replaceDuplicateResEnabled +
                     ", removeImg=" + removeImgEnabled +
                     ", resProguard=" + resProguardEnabled +
                     ", logEnabled=" + logEnabled +

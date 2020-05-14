@@ -16,3 +16,4 @@
 #-assumenosideeffects img0.jpg #这是注释
 -keep *.xml
 #-keep res/color/*.xml
+-dontpreverify img1.jpg

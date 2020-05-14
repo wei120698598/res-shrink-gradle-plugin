@@ -305,7 +305,7 @@ class Utils {
     }
 
     static boolean matchRules(File resFile, Set<String> rules) {
-        if (resFile == null || rules == null) return false
+        if (resFile == null || rules == null || rules.size() == 0) return false
         def relativePath = resFile.absolutePath.substring(resFile.absolutePath.lastIndexOf("res${File.separator}"))
         def path = Paths.get(relativePath)
         def name = Paths.get(resFile.name)

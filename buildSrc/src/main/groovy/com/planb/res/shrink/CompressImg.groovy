@@ -19,6 +19,7 @@ class CompressImg {
     private Set<String> keepList = new HashSet<>()
     private Set<String> notShrinkList = new HashSet<>()
     private Set<String> assumeNoSideEffectList = new HashSet<>()
+    private Set<String> preVerifyList = new HashSet<>()
     private Project project
     static ResShrinkPlugin.ResShrinkOptions options
     private Map<String, String> fileMd5List = new HashMap<>()
@@ -27,7 +28,7 @@ class CompressImg {
     private BaseVariant variant
     private String convertOutDir
     private int compressSize = 0
-    private int count = 0
+    private int processFileCount = 0
     private String buildTypeName
     private String processedResOutDirPath
     private File intermediatesDir
@@ -64,9 +65,9 @@ class CompressImg {
             //添加Rules
             report.append(Logs.RULES.format("Keep", keepList.toString()))
             report.append(Logs.RULES.format("Skip", notShrinkList.toString()))
-            report.append(Logs.RULES.format("Remove", assumeNoSideEffectList.toString() + "\n"))
+            report.append(Logs.RULES.format("Remove", assumeNoSideEffectList.toString()))
+            report.append(Logs.RULES.format("preverify", preVerifyList.toString() + "\n"))
         }
-
 
         new File(processedResOutDirPath).eachFileMatch(FileType.FILES, ~/^\S*\.ap[_k]\u0024/) {
             eachApk(it)
@@ -84,7 +85,7 @@ class CompressImg {
         report.append(logFiles.get(Logs.REPLACE).getText())
         report.append("\n")
         //追加日志
-        def msg = "${(System.currentTimeMillis() - startTime) / 1000.0f}s to process $count images. Compress size:${String.format("%.2f", compressSize / 1024.0f)}kb"
+        def msg = "${(System.currentTimeMillis() - startTime) / 1000.0f}s to process $processFileCount file. Compress size:${String.format("%.2f", compressSize / 1024.0f)}kb"
         Utils.logI(msg)
         report.append(msg)
     }
@@ -156,7 +157,7 @@ class CompressImg {
         def logProguard = logFiles.get(Logs.PROGUARD)
         def logKeep = logFiles.get(Logs.KEEP)
         //不混淆
-        if (!options.resProguardEnabled && !options.removeDuplicateEnabled) return
+        if (!options.resProguardEnabled && !options.replaceDuplicateResEnabled) return
         if (flattenPackageHierarchy) new File(zipDir, "r${File.separator}").mkdirs()
 
         FileOutputStream arscFos = null
@@ -175,7 +176,8 @@ class CompressImg {
                         logKeep.append(Logs.KEEP.format(s))
                         continue
                     }
-                    if (options.removeDuplicateEnabled) {
+                    processFileCount++
+                    if (options.replaceDuplicateResEnabled && !Utils.matchRules(resFile, preVerifyList)) {
                         def md5 = Utils.getMD5(resFile)
                         def resName = fileMd5List.get(md5)
                         //是重复的资源
@@ -233,13 +235,14 @@ class CompressImg {
 
 
     private void resChecker(File zipDir) {
-        if (!options.removeImgEnabled && !options.checkDuplicateEnabled) {
+        if (!options.removeImgEnabled && !options.checkDuplicateResEnabled) {
             return
         }
         File logRemove = logFiles.get(Logs.REMOVED)
         File logDuplicate = logFiles.get(Logs.DUPLICATE)
         new File(zipDir, "res${File.separator}").eachDir { resDir ->
             resDir.eachFile { resFile ->
+                processFileCount++
                 String simpleName = "res/${resFile.parentFile.name}/${resFile.name}"
                 //黑名单，文件删除
                 if (options.removeImgEnabled && Utils.matchRules(resFile, assumeNoSideEffectList)) {
@@ -250,7 +253,7 @@ class CompressImg {
                 }
 
                 //文件查重
-                if (options.checkDuplicateEnabled && !skippedRes.contains(simpleName)) {
+                if (options.checkDuplicateResEnabled && !skippedRes.contains(simpleName) && !Utils.matchRules(resFile, preVerifyList)) {
                     def md5 = Utils.getMD5(resFile)
                     def fileName = fileMd5List.get(md5)
                     if (fileName != null) {
@@ -308,7 +311,7 @@ class CompressImg {
                 def newSize = resFile.length()
                 def diffSize = resFileSize - newSize
                 logFiles.get(Logs.SHRINK).append(Logs.SHRINK.format(simpleName, resFileSize, newSize, diffSize))
-                count++
+                processFileCount++
                 compressSize += diffSize
             }
         }
@@ -329,8 +332,9 @@ class CompressImg {
 # Support file path wildcard, each item is on a alone line or separated by `,` .
 # The file path is by `res/` relative path or file name, such as`-dontshrink res/mipmap-hdpi/ic_launcher.png`or`-dontshrink ic_launcher.png` .
 
-# Do not convert to webp images, use `-dontshrink`.
-# Do not confuse resource files, use `-keep`.
+# Ignore convert to webp images, use `-dontshrink`.
+# Ignore check duplicate resource file, use `-dontpreverify`.
+# Ignore confuse resource files, use `-keep`.
 # Resource files to delete, use `-assumenosideeffects`.
 # Flatten package hierarchy, use `-flattenpackagehierarchy`.
 # Increase security, hide file extensions, use `-optimizations`.""")
@@ -348,6 +352,8 @@ class CompressImg {
                 parseRules(notShrinkList, RulesKey.NOT_SHRINK, text)
             } else if (text.startsWith(RulesKey.ASSUME_NO_SIDE_EFFECT)) {
                 parseRules(assumeNoSideEffectList, RulesKey.ASSUME_NO_SIDE_EFFECT, text)
+            } else if (text.startsWith(RulesKey.PREVERIFY)) {
+                parseRules(preVerifyList, RulesKey.PREVERIFY, text)
             } else if (text.startsWith(RulesKey.FLATTEN_PACKAGE_HIERARCHY)) {
                 this.flattenPackageHierarchy = true
             } else if (text.startsWith(RulesKey.OPTIMIZATIONS)) {
@@ -380,6 +386,7 @@ class CompressImg {
         static def ASSUME_NO_SIDE_EFFECT = "-assumenosideeffects"
         static def FLATTEN_PACKAGE_HIERARCHY = "-flattenpackagehierarchy"
         static def OPTIMIZATIONS = "-optimizations"
+        static def PREVERIFY = "-dontpreverify"
     }
 
     static enum Logs {

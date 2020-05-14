@@ -40,18 +40,24 @@ resShrinkOptions {
     //convert quality 0-100,suggest 50-100, default 75.
     def quality = 75
     
+    //convert PNG/JPG/GIF to Webp.
+    def compressImgEnabled = true
+    
     //check image is duplicate, if both size equal, console will show error message , default true.
-    def checkDuplicateEnabled = true
+    def checkDuplicateResEnabled = true
+    
+    //replace duplicate resource file with one of them.
+    def replaceDuplicateResEnabled = true
     
     //remove image by the regex, default null.
     def removeImgEnabled = true
-   
+    
     //enable resource proguard, enable
     def resProguardEnabled = true
-   
+    
     //print log, default true.
     def logEnabled = true
-   
+    
     //res-shrink-plugin-rules.pro file.
     File rulesFile
 }
@@ -70,13 +76,15 @@ afterEvaluate {
 
 # Configure `res-shrink-plugin-rules.pro`
 Create `res-shrink-plugin-rules.pro` in your application directory.<br>
-Support file path wildcard, each item is on a alone line or separated by `,` .<br>
-The file path is by `res/` relative path or file name, such as`-dontshrink res/mipmap-hdpi/ic_launcher.png`or`-dontshrink ic_launcher.png` .<br>
+upport file path wildcard, each item is on a alone line or separated by `,`.<br>
 <br>
-Do not convert to webp images, use `-dontshrink`.<br>
-Do not confuse resource files, use `-keep`.<br>
+The file path is by `res/` relative path or file name, such as`-dontshrink res/mipmap-hdpi/ic_launcher.png`or`-dontshrink ic_launcher.png` .<br>
+Ignore convert to webp images, use `-dontshrink`.<br>
+Ignore check duplicate resource file, use `-dontpreverify`.<br>
+Ignore confuse resource files, use `-keep`.<br>
 Resource files to delete, use `-assumenosideeffects`.<br>
 Flatten package hierarchy, use `-flattenpackagehierarchy`.<br>
 Increase security, hide file extensions, use `-optimizations`.<br>
+
 # Plugin log
 res-shrink-gradle-plugin will generate `{app}/build/outputs/mapping/{buildType}/res-shrink-plugin-report.txt` file when built finish.
