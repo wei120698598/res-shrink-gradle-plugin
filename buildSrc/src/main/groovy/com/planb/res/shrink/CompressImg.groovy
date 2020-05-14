@@ -181,7 +181,7 @@ class CompressImg {
                         //是重复的资源
                         if (resName != null && s != resName) {
                             compressSize += resFile.length()
-                            logFiles.get(Logs.REPLACE).append(Logs.REPLACE.format(s, resFile.length(), resFile.length()))
+                            logFiles.get(Logs.REPLACE).append(Logs.REPLACE.format(s, resName, resFile.length(), resFile.length()))
                             resFile.delete()
                             //不混淆直接替换资源名
                             if (!options.resProguardEnabled) {
@@ -388,7 +388,7 @@ class CompressImg {
         PROGUARD("Proguard %s -> %s\r\n"),
         KEEP("Keep %s\r\n"),
         REMOVED("Removed %s  DiffSize(%d->%d=%d bytes)\r\n"),
-        REPLACE("Replace %s  DiffSize(%d->0=%d bytes)\r\n"),
+        REPLACE("Replace %s => %s  DiffSize(%d->0=%d bytes)\r\n"),
         DUPLICATE("Duplicate %s = %s  MD5(%s)\r\n"),
         HEADER("AppVersion: %s\r\n%s\r\n\n"),
         RULES("%sRules: %s\n"),
